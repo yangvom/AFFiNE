@@ -1,4 +1,4 @@
-name: Build AFFiNE-Local-Keck
+name: Build AFFiNE-Local
 
 on:
     workflow_dispatch:
@@ -15,7 +15,7 @@ env:
     REGISTRY: ghcr.io
     NAMESPACE: toeverything
     AFFINE_IMAGE_NAME: AFFiNE
-    IMAGE_TAG_LATEST: nightly-keck
+    IMAGE_TAG_LATEST: nightly-latest
     LOCAL_CACHE: localhost:5000/toeverything/relocate:latest
 
 jobs:
@@ -64,7 +64,7 @@ jobs:
               with:
                   context: .
                   push: true
-                  file: ./.github/deployment/Dockerfile-affine-keck
+                  file: ./.github/deployment/Dockerfile-affine
                   tags: ${{ env.LOCAL_CACHE }}
                   target: AFFiNE
 

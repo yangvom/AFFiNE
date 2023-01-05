@@ -1,10 +1,19 @@
-name: Build Lisa
+name: Build Keck
 
 on:
-    push:
-        branches: [master]
+    workflow_dispatch:
+    # push:
+    #     branches: [master]
+    #     paths:
+    #         - 'apps/keck/**'
+    #         - '.github/deployment'
+    #         - '.github/workflows/keck.yml'
     # pull_request:
     #     branches: [master]
+    #     paths:
+    #         - 'apps/keck/**'
+    #         - '.github/deployment'
+    #         - '.github/workflows/keck.yml'
 
 # Cancels all previous workflow runs for pull requests that have not completed.
 # See https://docs.github.com/en/actions/using-jobs/using-concurrency
@@ -17,7 +26,7 @@ concurrency:
 env:
     REGISTRY: ghcr.io
     NAMESPACE: toeverything
-    LISA_IMAGE_NAME: lisa
+    KECK_IMAGE_NAME: keck
     IMAGE_TAG: canary-${{ github.sha }}
     IMAGE_TAG_LATEST: nightly-latest
 
@@ -40,21 +49,21 @@ jobs:
                   username: ${{ github.actor }}
                   password: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Extract metadata (tags, labels) for Docker (lisa)
-              id: meta_lisa
+            - name: Extract metadata (tags, labels) for Docker (keck)
+              id: meta_keck
               uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
               with:
-                  images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.LISA_IMAGE_NAME }}
+                  images: ${{ env.REGISTRY }}/${{ env.NAMESPACE }}/${{ env.KECK_IMAGE_NAME }}
                   tags: |
                       ${{ env.IMAGE_TAG }}
                       ${{ env.IMAGE_TAG_LATEST }}
 
-            - name: Build and push Docker image (lisa)
+            - name: Build and push Docker image (keck)
               uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
               with:
                   context: .
-                  file: ./.github/deployment/Dockerfile-lisa
-                  push: ${{ github.ref == 'refs/heads/master' && true || false }}
-                  tags: ${{ steps.meta_lisa.outputs.tags }}
-                  labels: ${{ steps.meta_lisa.outputs.labels }}
-                  target: lisa
+                  file: ./.github/deployment/Dockerfile-keck
+                  push: ${{ github.ref == 'refs/heads/field' && true || false }}
+                  tags: ${{ steps.meta_keck.outputs.tags }}
+                  labels: ${{ steps.meta_keck.outputs.labels }}
+                  target: keck

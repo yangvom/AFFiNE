@@ -2,9 +2,9 @@ name: standard check
 
 on:
     push:
-        branches: [ "develop", "master" ]
+        branches: ["Pre-Alpha"]
     pull_request:
-        branches: [ "develop", "master" ]
+        branches: ["Pre-Alpha"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.ref }}

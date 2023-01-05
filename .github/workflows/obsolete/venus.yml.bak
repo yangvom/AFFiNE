@@ -1,12 +1,13 @@
 name: Build Venus
 
 on:
-    push:
-        branches: [master]
-        paths:
-            - 'apps/venus/**'
-            - '.github/deployment'
-            - '.github/workflows/venus.yml'
+    workflow_dispatch:
+    # push:
+    #     branches: [master]
+    #     paths:
+    #         - 'apps/venus/**'
+    #         - '.github/deployment'
+    #         - '.github/workflows/venus.yml'
     # pull_request:
     #     branches: [master]
     #     paths:

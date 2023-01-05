@@ -1,10 +1,7 @@
-name: Build AFFiNE-Local
+name: Build AFFiNE-Local-Keck
 
 on:
-    push:
-        branches: [master]
-    # pull_request:
-    #     branches: [master]
+    workflow_dispatch:
 
 # Cancels all previous workflow runs for pull requests that have not completed.
 # See https://docs.github.com/en/actions/using-jobs/using-concurrency
@@ -18,7 +15,7 @@ env:
     REGISTRY: ghcr.io
     NAMESPACE: toeverything
     AFFINE_IMAGE_NAME: AFFiNE
-    IMAGE_TAG_LATEST: nightly-latest
+    IMAGE_TAG_LATEST: nightly-keck
     LOCAL_CACHE: localhost:5000/toeverything/relocate:latest
 
 jobs:
@@ -67,7 +64,7 @@ jobs:
               with:
                   context: .
                   push: true
-                  file: ./.github/deployment/Dockerfile-affine
+                  file: ./.github/deployment/Dockerfile-affine-keck
                   tags: ${{ env.LOCAL_CACHE }}
                   target: AFFiNE
 
