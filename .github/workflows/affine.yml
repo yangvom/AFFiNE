@@ -14,8 +14,8 @@ concurrency:
 env:
     REGISTRY: ghcr.io
     NAMESPACE: toeverything
-    AFFINE_IMAGE_NAME: AFFiNE
-    IMAGE_TAG_LATEST: nightly-keck
+    AFFINE_IMAGE_NAME: AFFiNE-static
+    IMAGE_TAG_LATEST: pre-alpha
     LOCAL_CACHE: localhost:5000/toeverything/relocate:latest
 
 jobs:
