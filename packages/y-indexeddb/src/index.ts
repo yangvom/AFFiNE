@@ -1,3 +1,4 @@
+import { Slot } from '@blocksuite/global/utils';
 import { openDB } from 'idb';
 import type { DBSchema, IDBPDatabase } from 'idb/build/entry';
 import {
@@ -77,6 +78,10 @@ export interface IndexedDBProvider {
   disconnect: () => void;
   cleanup: () => void;
   whenSynced: Promise<void>;
+  slots: {
+    beforeStorage: Slot;
+    afterStorage: Slot;
+  };
 }
 
 export type UpdateMessage = {
@@ -169,6 +174,8 @@ export const createIndexedDBProvider = (
   let early = true;
   let connect = false;
   let destroy = false;
+  const beforeStorage = new Slot<void>();
+  const afterStorage = new Slot<void>();
 
   async function handleUpdate(update: Uint8Array, origin: unknown) {
     const db = await dbPromise;
@@ -181,6 +188,8 @@ export const createIndexedDBProvider = (
     const store = db
       .transaction('workspace', 'readwrite')
       .objectStore('workspace');
+    // before-storage
+    beforeStorage.emit();
     let data = await store.get(id);
     if (!data) {
       data = {
@@ -215,6 +224,8 @@ export const createIndexedDBProvider = (
     } else {
       await store.put(data);
     }
+    // after-storage
+    afterStorage.emit();
   }
 
   const dbPromise = openDB<BlockSuiteBinaryDB>(dbName, dbVersion, {
@@ -332,6 +343,10 @@ export const createIndexedDBProvider = (
       // todo
     },
     whenSynced: Promise.resolve(),
+    slots: {
+      beforeStorage,
+      afterStorage,
+    },
   };
 
   return apis;

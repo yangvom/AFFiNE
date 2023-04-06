@@ -65,6 +65,10 @@ const createIndexedDBProvider = (
     blockSuiteWorkspace.doc
   );
   const callbacks = new Set<() => void>();
+  function beforeUnload(event: BeforeUnloadEvent) {
+    event.preventDefault();
+    event.returnValue = 'local data is not saved';
+  }
   return {
     flavour: 'local-indexeddb',
     callbacks,
@@ -78,6 +82,12 @@ const createIndexedDBProvider = (
         'connect indexeddb provider',
         blockSuiteWorkspace.id
       );
+      indexeddbProvider.slots.beforeStorage.on(() => {
+        window.addEventListener('beforeunload', beforeUnload);
+      });
+      indexeddbProvider.slots.afterStorage.on(() => {
+        window.removeEventListener('beforeunload', beforeUnload);
+      });
       indexeddbProvider.connect();
       indexeddbProvider.whenSynced
         .then(() => {
@@ -97,6 +107,8 @@ const createIndexedDBProvider = (
         'disconnect indexeddb provider',
         blockSuiteWorkspace.id
       );
+      indexeddbProvider.slots.beforeStorage.dispose();
+      indexeddbProvider.slots.afterStorage.dispose();
       indexeddbProvider.disconnect();
     },
   };
