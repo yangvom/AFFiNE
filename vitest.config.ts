@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   test: {
-    setupFiles: ['./scripts/setup/search.ts'],
+    setupFiles: ['./scripts/setup/search.ts', './scripts/setup/fetch.ts'],
     include: [
       'packages/**/*.spec.ts',
       'packages/**/*.spec.tsx',

@@ -1,9 +1,9 @@
 import { MessageCode, Messages } from '@affine/env';
 import { assertExists } from '@blocksuite/global/utils';
+import ky from 'ky';
 import { z } from 'zod';
 
-import { getLoginStorage } from '../login';
-
+import { createAffineAuth, getLoginStorage, setLoginStorage } from '../login';
 export class RequestError extends Error {
   public readonly code: MessageCode;
 
@@ -184,247 +184,313 @@ export const createWorkspaceResponseSchema = z.object({
   created_at: z.number(),
 });
 
-export function createWorkspaceApis(prefixUrl = '/') {
+export function createWorkspaceApis(
+  prefixUrl = '/',
+  affineAuth: ReturnType<typeof createAffineAuth> = createAffineAuth()
+) {
+  const $ = ky.extend({
+    prefixUrl,
+    retry: 2,
+    hooks: {
+      beforeError: [
+        error => {
+          console.log(error);
+          return error;
+        },
+      ],
+      beforeRequest: [
+        request => {
+          if (request.url.includes('public')) {
+            // ignore public request
+            return;
+          }
+          const storage = getLoginStorage();
+          if (storage) {
+            request.headers.set('Authorization', storage.token);
+          }
+        },
+      ],
+      afterResponse: [
+        async (request, _, response) => {
+          if (response.status === 401) {
+            if (request.url.endsWith('api/user/token')) {
+              // ignore itself request
+              return;
+            }
+            const storage = getLoginStorage();
+            if (storage) {
+              // refresh token
+              const response = await affineAuth.refreshToken(storage);
+              if (response) {
+                setLoginStorage(response);
+              }
+            }
+          }
+        },
+      ],
+    },
+  });
   return {
     getWorkspaces: async (): Promise<Workspace[]> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + 'api/workspace', {
-        method: 'GET',
+      return $.get('api/workspace', {
         headers: {
-          Authorization: auth.token,
           'Cache-Control': 'no-cache',
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.loadListFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.loadListFailed);
+              error.message = Messages[MessageCode.loadListFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     getWorkspaceDetail: async (
       params: GetWorkspaceDetailParams
     ): Promise<WorkspaceDetail | null> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${params.id}`, {
-        method: 'GET',
+      return $.get(`api/workspace/${params.id}`, {
         headers: {
-          Authorization: auth.token,
+          'Content-Type': 'application/json',
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.loadListFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.loadListFailed);
+              error.message = Messages[MessageCode.loadListFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     getWorkspaceMembers: async (
       params: GetWorkspaceDetailParams
     ): Promise<Member[]> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${params.id}/permission`, {
-        method: 'GET',
+      return $.get(`api/workspace/${params.id}/permission`, {
         headers: {
-          Authorization: auth.token,
+          'Content-Type': 'application/json',
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.getMembersFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.getMembersFailed);
+              error.message = Messages[MessageCode.getMembersFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     createWorkspace: async (
       encodedYDoc: ArrayBuffer
     ): Promise<{ id: string }> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + 'api/workspace', {
-        method: 'POST',
+      return $.post('api/workspace', {
         body: encodedYDoc,
         headers: {
           'Content-Type': 'application/octet-stream',
-          Authorization: auth.token,
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.createWorkspaceFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.createWorkspaceFailed);
+              error.message =
+                Messages[MessageCode.createWorkspaceFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     updateWorkspace: async (
       params: UpdateWorkspaceParams
     ): Promise<{ public: boolean | null }> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${params.id}`, {
-        method: 'POST',
-        body: JSON.stringify({
+      return $.post(`api/workspace/${params.id}`, {
+        json: {
           public: params.public,
-        }),
+        },
         headers: {
           'Content-Type': 'application/json',
-          Authorization: auth.token,
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.updateWorkspaceFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.updateWorkspaceFailed);
+              error.message =
+                Messages[MessageCode.updateWorkspaceFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     deleteWorkspace: async (
       params: DeleteWorkspaceParams
     ): Promise<boolean> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${params.id}`, {
-        method: 'DELETE',
+      return $.delete(`api/workspace/${params.id}`, {
         headers: {
-          Authorization: auth.token,
+          'Content-Type': 'application/json',
         },
-      })
-        .then(r => r.ok)
-        .catch(e => {
-          throw new RequestError(MessageCode.deleteWorkspaceFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.deleteWorkspaceFailed);
+              error.message =
+                Messages[MessageCode.deleteWorkspaceFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).then(response => response.ok);
     },
 
     /**
      * Notice: Only support normal(contrast to private) workspace.
      */
     inviteMember: async (params: InviteMemberParams): Promise<void> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${params.id}/permission`, {
-        method: 'POST',
-        body: JSON.stringify({
+      return $.post(`api/workspace/${params.id}/permission`, {
+        json: {
           email: params.email,
-        }),
+        },
         headers: {
           'Content-Type': 'application/json',
-          Authorization: auth.token,
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.inviteMemberFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.inviteMemberFailed);
+              error.message = Messages[MessageCode.inviteMemberFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     removeMember: async (params: RemoveMemberParams): Promise<void> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/permission/${params.permissionId}`, {
-        method: 'DELETE',
+      return $.delete(`api/permission/${params.permissionId}`, {
         headers: {
-          Authorization: auth.token,
+          'Content-Type': 'application/json',
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.removeMemberFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.removeMemberFailed);
+              error.message = Messages[MessageCode.removeMemberFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     acceptInviting: async (
       params: AcceptInvitingParams
     ): Promise<Permission> => {
-      return fetch(prefixUrl + `api/invitation/${params.invitingCode}`, {
-        method: 'POST',
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.acceptInvitingFailed, e);
-        });
+      return $.post(`api/invitation/${params.invitingCode}`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.acceptInvitingFailed);
+              error.message =
+                Messages[MessageCode.acceptInvitingFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     uploadBlob: async (
       workspaceId: string,
       arrayBuffer: ArrayBuffer,
       type: string
     ): Promise<string> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      const mb = arrayBuffer.byteLength / 1048576;
-      if (mb > 10) {
-        throw new RequestError(MessageCode.blobTooLarge);
-      }
-      return fetch(prefixUrl + `api/workspace/${workspaceId}/blob`, {
-        method: 'PUT',
+      return $.post(`api/workspace/${workspaceId}/blob`, {
         body: arrayBuffer,
         headers: {
           'Content-Type': type,
-          Authorization: auth.token,
         },
-      }).then(r => r.text());
+        hooks: {
+          beforeError: [
+            error => {
+              // error.message = Messages[MessageCode.uploadBlobFailed].message
+              return error;
+            },
+          ],
+        },
+      }).text();
     },
     getBlob: async (
       workspaceId: string,
       blobId: string
     ): Promise<ArrayBuffer> => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${workspaceId}/blob/${blobId}`, {
-        method: 'GET',
-        headers: {
-          Authorization: auth.token,
+      return $.get(`api/workspace/${workspaceId}/blob/${blobId}`, {
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.getBlobFailed);
+              error.message = Messages[MessageCode.getBlobFailed].message;
+              return error;
+            },
+          ],
         },
-      })
-        .then(r => r.arrayBuffer())
-        .catch(e => {
-          throw new RequestError(MessageCode.getBlobFailed, e);
-        });
+      }).arrayBuffer();
     },
     leaveWorkspace: async ({ id }: LeaveWorkspaceParams) => {
-      const auth = getLoginStorage();
-      assertExists(auth);
-      return fetch(prefixUrl + `api/workspace/${id}/permission`, {
-        method: 'DELETE',
+      return $.delete(`api/workspace/${id}/permission`, {
         headers: {
-          Authorization: auth.token,
+          'Content-Type': 'application/json',
         },
-      })
-        .then(r => r.json())
-        .catch(e => {
-          throw new RequestError(MessageCode.leaveWorkspaceFailed, e);
-        });
+        hooks: {
+          beforeError: [
+            error => {
+              sendMessage(MessageCode.leaveWorkspaceFailed);
+              error.message =
+                Messages[MessageCode.leaveWorkspaceFailed].message;
+              return error;
+            },
+          ],
+        },
+      }).json();
     },
     downloadPublicWorkspacePage: async (
       workspaceId: string,
       pageId: string
     ): Promise<ArrayBuffer> => {
-      return fetch(
-        prefixUrl + `api/public/workspace/${workspaceId}/${pageId}`,
-        {
-          method: 'GET',
-        }
-      ).then(r => r.arrayBuffer());
+      return $.get(`api/public/workspace/${workspaceId}/${pageId}`, {
+        hooks: {
+          beforeError: [
+            error => {
+              // error.message = Messages[
+              //   MessageCode.downloadPublicWorkspacePageFailed
+              // ].message
+              return error;
+            },
+          ],
+        },
+      }).arrayBuffer();
     },
     downloadWorkspace: async (
       workspaceId: string,
       published = false
     ): Promise<ArrayBuffer> => {
       if (published) {
-        return fetch(prefixUrl + `api/public/workspace/${workspaceId}`, {
-          method: 'GET',
-        }).then(r => r.arrayBuffer());
+        return $.get(`api/public/workspace/${workspaceId}`).arrayBuffer();
       } else {
-        const auth = getLoginStorage();
-        assertExists(auth);
-        return fetch(prefixUrl + `api/workspace/${workspaceId}/doc`, {
-          method: 'GET',
-          headers: {
-            Authorization: auth.token,
+        return $.get(`api/workspace/${workspaceId}/doc`, {
+          hooks: {
+            beforeError: [
+              error => {
+                sendMessage(MessageCode.downloadWorkspaceFailed);
+                error.message =
+                  Messages[MessageCode.downloadWorkspaceFailed].message;
+                return error;
+              },
+            ],
           },
-        })
-          .then(r =>
-            r.status === 403
-              ? Promise.reject(new RequestError(MessageCode.noPermission))
-              : r
-          )
-          .then(r => r.arrayBuffer())
-          .catch(e => {
-            if (e instanceof RequestError) {
-              throw e;
-            }
-            throw new RequestError(MessageCode.downloadWorkspaceFailed, e);
-          });
+        }).arrayBuffer();
       }
     },
   } as const;
