@@ -1,3 +1,4 @@
+import type { PageMeta } from '@blocksuite/store';
 import { faker } from '@faker-js/faker';
 import type { Page } from '@playwright/test';
 
