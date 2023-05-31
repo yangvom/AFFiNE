@@ -1,10 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="./webpack-hmr.d.ts" />
-
 /**
  * AFFiNE Plugin System Types
  */
-
 import type { EditorContainer } from '@blocksuite/editor';
 import type { Workspace } from '@blocksuite/store';
 import type { Page } from '@playwright/test';
@@ -163,12 +161,18 @@ export type PluginBlockSuiteAdapter = {
   uiDecorator: (root: EditorContainer) => Cleanup;
 };
 
-export type PluginAdapterCreator = (
-  context: AffinePluginContext
-) => PluginUIAdapter;
+export type AsyncCallFn = (...args: unknown[]) => Promise<unknown>;
+
+export type AsyncCall = Record<string, AsyncCallFn>;
+
+export type PluginRPC = {
+  serverSide: AsyncCall;
+  uiSide: AsyncCall;
+};
 
 export type AffinePlugin<ID extends string> = {
   definition: Definition<ID>;
   uiAdapter: Partial<PluginUIAdapter>;
   blockSuiteAdapter: Partial<PluginBlockSuiteAdapter>;
+  rpc: Partial<PluginRPC>;
 };

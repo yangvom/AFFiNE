@@ -30,7 +30,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/bookmark-block@workspace:plugins/bookmark-block":
+"@affine/bookmark-block@workspace:^, @affine/bookmark-block@workspace:plugins/bookmark-block":
   version: 0.0.0-use.local
   resolution: "@affine/bookmark-block@workspace:plugins/bookmark-block"
   dependencies:
@@ -168,6 +168,7 @@ __metadata:
   resolution: "@affine/electron@workspace:apps/electron"
   dependencies:
     "@affine-test/kit": "workspace:*"
+    "@affine/bookmark-block": "workspace:^"
     "@affine/native": "workspace:*"
     "@electron-forge/cli": ^6.1.1
     "@electron-forge/core": ^6.1.1
@@ -182,6 +183,7 @@ __metadata:
     "@types/better-sqlite3": ^7.6.4
     "@types/fs-extra": ^11.0.1
     "@types/uuid": ^9.0.1
+    async-call-rpc: ^6.3.0
     better-sqlite3: ^8.4.0
     cheerio: ^1.0.0-rc.12
     chokidar: ^3.5.3
@@ -9082,6 +9084,7 @@ __metadata:
     "@blocksuite/global": 0.0.0-20230531080915-ca9c55a2-nightly
     "@blocksuite/lit": 0.0.0-20230531080915-ca9c55a2-nightly
     "@blocksuite/store": 0.0.0-20230531080915-ca9c55a2-nightly
+    async-call-rpc: =6.2.1
     jotai: ^2.1.0
   peerDependencies:
     "@blocksuite/blocks": "*"
@@ -11305,6 +11308,20 @@ __metadata:
   version: 2.0.0
   resolution: "astral-regex@npm:2.0.0"
   checksum: 876231688c66400473ba505731df37ea436e574dd524520294cc3bbc54ea40334865e01fa0d074d74d036ee874ee7e62f486ea38bc421ee8e6a871c06f011766
+  languageName: node
+  linkType: hard
+
+"async-call-rpc@npm:=6.2.1":
+  version: 6.2.1
+  resolution: "async-call-rpc@npm:6.2.1"
+  checksum: 95e7c93f756334d686dda46851533dd675b724abe63473dfb855fee8c2b931ad15b45caeebbde5a7942f507504fbb46d659ae6f43308e8a09ffcb7c901c5dda9
+  languageName: node
+  linkType: hard
+
+"async-call-rpc@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "async-call-rpc@npm:6.3.0"
+  checksum: cc2d6f6c8e37ca6ed96862b9e7e5ef64da5e2076240244381aaa6455d535b01de0777c7896f3a17f2f1ae9e45ff3e568def7ffb946fe1826dff8f3dec70b359b
   languageName: node
   linkType: hard
 
