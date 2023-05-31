@@ -27,6 +27,9 @@
       "path": "../hooks"
     },
     {
+      "path": "../plugin-infra"
+    },
+    {
       "path": "./tsconfig.node.json"
     },
     { "path": "../../tests/fixtures" }

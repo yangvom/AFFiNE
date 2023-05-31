@@ -1,5 +1,7 @@
+import type { PluginAsyncCall } from '@toeverything/plugin-infra/type';
 import type { CheerioAPI, Element } from 'cheerio';
 import { load } from 'cheerio';
+// @ts-expect-error fix type error
 import got from 'got';
 
 import type { Context, MetaData, Options, RuleSet } from './types';
@@ -122,4 +124,6 @@ const getMetaData = async function (
   return metadata;
 };
 
-export { getMetaData };
+export default {
+  getMetaData,
+} satisfies PluginAsyncCall;

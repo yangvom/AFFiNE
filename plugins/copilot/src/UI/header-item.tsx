@@ -4,29 +4,32 @@ import { useSetAtom } from 'jotai';
 import type { ReactElement } from 'react';
 import { useCallback } from 'react';
 
-export const HeaderItem: PluginUIAdapter['headerItem'] = ({
+import type { default as RPC } from '../server/index';
+
+export const HeaderItem: PluginUIAdapter<typeof RPC>['headerItem'] = ({
   contentLayoutAtom,
+  rpc,
 }): ReactElement => {
   const setLayout = useSetAtom(contentLayoutAtom);
   return (
     <Tooltip content="Chat with AI" placement="bottom-end">
       <IconButton
-        onClick={useCallback(
-          () =>
-            setLayout(layout => {
-              if (layout === 'editor') {
-                return {
-                  direction: 'row',
-                  first: 'editor',
-                  second: 'com.affine.copilot',
-                  splitPercentage: 80,
-                };
-              } else {
-                return 'editor';
-              }
-            }),
-          [setLayout]
-        )}
+        onClick={useCallback(async () => {
+          console.log('rpc', rpc);
+          console.log(await rpc.hello());
+          setLayout(layout => {
+            if (layout === 'editor') {
+              return {
+                direction: 'row',
+                first: 'editor',
+                second: 'com.affine.copilot',
+                splitPercentage: 80,
+              };
+            } else {
+              return 'editor';
+            }
+          });
+        }, [setLayout])}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"

@@ -88,3 +88,13 @@ const appInfo = {
 };
 
 export { apis, appInfo, events };
+
+const windowLoaded = new Promise(resolve => {
+  window.addEventListener('load', resolve, { once: true });
+});
+
+ipcRenderer.on('plugin-port', async event => {
+  await windowLoaded;
+  console.log('got plugin port');
+  window.postMessage('plugin-port', '*', event.ports);
+});

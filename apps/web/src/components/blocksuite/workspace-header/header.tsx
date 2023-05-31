@@ -7,8 +7,9 @@ import { SidebarSwitch } from '@affine/component/app-sidebar/sidebar-header';
 import { WorkspaceFlavour } from '@affine/workspace/type';
 import { CloseIcon, MinusIcon, RoundedRectangleIcon } from '@blocksuite/icons';
 import type { Page } from '@blocksuite/store';
-import { affinePluginsAtom } from '@toeverything/plugin-infra/manager';
+import { affinePluginsAtom } from '@toeverything/plugin-infra/atom';
 import type { PluginUIAdapter } from '@toeverything/plugin-infra/type';
+import type { PluginAsyncCall } from '@toeverything/plugin-infra/type';
 import { useAtom, useAtomValue } from 'jotai';
 import type { FC, HTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { forwardRef, memo, useEffect, useMemo, useState } from 'react';
@@ -141,11 +142,13 @@ export type HeaderProps = BaseHeaderProps;
 
 const PluginHeaderItemAdapter = memo<{
   headerItem: PluginUIAdapter['headerItem'];
-}>(function PluginHeaderItemAdapter({ headerItem }) {
+  rpc: PluginAsyncCall;
+}>(function PluginHeaderItemAdapter({ headerItem, rpc }) {
   return (
     <div>
       {headerItem({
         contentLayoutAtom,
+        rpc,
       })}
     </div>
   );
@@ -165,10 +168,12 @@ const PluginHeader = () => {
         .map(plugin => {
           const headerItem = plugin.uiAdapter
             .headerItem as PluginUIAdapter['headerItem'];
+          const rpc = plugin.rpc.serverSide;
           return (
             <PluginHeaderItemAdapter
               key={plugin.definition.id}
               headerItem={headerItem}
+              rpc={rpc}
             />
           );
         })}

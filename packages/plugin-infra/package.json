@@ -5,7 +5,9 @@
     "build": "vite build"
   },
   "exports": {
+    "./atom": "./src/atom.ts",
     "./manager": "./src/manager.ts",
+    "./server-manager": "./src/server-manager.ts",
     "./type": "./src/type.ts",
     "./react": "./src/react/index.ts"
   },
@@ -18,7 +20,7 @@
     "@blocksuite/global": "0.0.0-20230531080915-ca9c55a2-nightly",
     "@blocksuite/lit": "0.0.0-20230531080915-ca9c55a2-nightly",
     "@blocksuite/store": "0.0.0-20230531080915-ca9c55a2-nightly",
-    "async-call-rpc": "=6.2.1"
+    "async-call-rpc": "^6.3.1"
   },
   "devDependencies": {
     "jotai": "^2.1.0"

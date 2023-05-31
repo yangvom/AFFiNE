@@ -2,6 +2,7 @@ import type { PluginBlockSuiteAdapter } from '@toeverything/plugin-infra/type';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
+import type { default as Server } from '../server';
 import { BookMarkUI } from './ui';
 
 export default {
@@ -26,4 +27,4 @@ export default {
       return () => {};
     }
   },
-} satisfies Partial<PluginBlockSuiteAdapter>;
+} satisfies Partial<PluginBlockSuiteAdapter<typeof Server>>;

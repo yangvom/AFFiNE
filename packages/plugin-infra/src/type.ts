@@ -138,41 +138,49 @@ export type Adapter<Props extends Record<string, unknown>> = (
   props: Props
 ) => ReactElement;
 
-export type AffinePluginContext = {
-  toast: (text: string) => void;
-};
+export type BaseProps<ServerSideRPC extends PluginAsyncCall = PluginAsyncCall> =
+  {
+    contentLayoutAtom: ContentLayoutAtom;
+    rpc: ServerSideRPC;
+  };
 
-export type BaseProps = {
-  contentLayoutAtom: ContentLayoutAtom;
-};
-
-export type PluginUIAdapter = {
-  sidebarItem: Adapter<BaseProps>;
-  headerItem: Adapter<BaseProps>;
-  detailContent: Adapter<BaseProps>;
+export type PluginUIAdapter<
+  ServerSideRPC extends PluginAsyncCall = PluginAsyncCall
+> = {
+  sidebarItem: Adapter<BaseProps<ServerSideRPC>>;
+  headerItem: Adapter<BaseProps<ServerSideRPC>>;
+  detailContent: Adapter<BaseProps<ServerSideRPC>>;
   debugContent: Adapter<Record<string, unknown>>;
 };
 
 type Cleanup = () => void;
 
-export type PluginBlockSuiteAdapter = {
-  storeDecorator: (currentWorkspace: Workspace) => Promise<void>;
-  pageDecorator: (currentPage: Page) => Cleanup;
-  uiDecorator: (root: EditorContainer) => Cleanup;
+export type PluginBlockSuiteAdapter<
+  ServerSideRPC extends PluginAsyncCall = PluginAsyncCall
+> = {
+  storeDecorator: (
+    currentWorkspace: Workspace,
+    rpc: ServerSideRPC
+  ) => Promise<void>;
+  pageDecorator: (currentPage: Page, rpc: ServerSideRPC) => Cleanup;
+  uiDecorator: (root: EditorContainer, rpc: ServerSideRPC) => Cleanup;
 };
 
-export type AsyncCallFn = (...args: unknown[]) => Promise<unknown>;
+export type PluginAsyncCallFn = (...args: any[]) => Promise<any>;
 
-export type AsyncCall = Record<string, AsyncCallFn>;
+export type PluginAsyncCall = Record<string, PluginAsyncCallFn>;
 
 export type PluginRPC = {
-  serverSide: AsyncCall;
-  uiSide: AsyncCall;
+  serverSide: PluginAsyncCall;
+  uiSide: PluginAsyncCall;
 };
 
-export type AffinePlugin<ID extends string> = {
+export type AffinePlugin<
+  ID extends string,
+  ServerSideRPC extends PluginAsyncCall
+> = {
   definition: Definition<ID>;
-  uiAdapter: Partial<PluginUIAdapter>;
-  blockSuiteAdapter: Partial<PluginBlockSuiteAdapter>;
-  rpc: Partial<PluginRPC>;
+  uiAdapter: Partial<PluginUIAdapter<ServerSideRPC>>;
+  blockSuiteAdapter: Partial<PluginBlockSuiteAdapter<ServerSideRPC>>;
+  rpc: PluginRPC;
 };

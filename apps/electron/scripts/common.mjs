@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 
+import { replace } from 'esbuild-plugin-replace';
 import { fileURLToPath } from 'url';
-
 export const root = fileURLToPath(new URL('..', import.meta.url));
 export const NODE_MAJOR_VERSION = 18;
 
@@ -40,7 +40,14 @@ export const config = () => {
       bundle: true,
       target: `node${NODE_MAJOR_VERSION}`,
       platform: 'node',
-      external: ['electron', 'yjs', 'better-sqlite3', 'electron-updater'],
+      external: [
+        'electron',
+        'yjs',
+        'better-sqlite3',
+        'electron-updater',
+        'got',
+        'cheerio',
+      ],
       define: define,
       format: 'cjs',
       loader: {
@@ -48,6 +55,11 @@ export const config = () => {
       },
       assetNames: '[name]',
       treeShaking: true,
+      plugins: [
+        replace({
+          'import.meta.webpackHot': 'false',
+        }),
+      ],
     },
     preload: {
       entryPoints: [resolve(root, './layers/preload/src/index.ts')],

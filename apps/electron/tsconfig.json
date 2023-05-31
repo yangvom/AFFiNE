@@ -25,7 +25,15 @@
     {
       "path": "../../packages/env"
     },
-    { "path": "../../tests/kit" }
+    {
+      "path": "../../packages/workspace"
+    },
+    {
+      "path": "../../packages/plugin-infra"
+    },
+    {
+      "path": "../../tests/kit"
+    }
   ],
   "ts-node": {
     "esm": true,

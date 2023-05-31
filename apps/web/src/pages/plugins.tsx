@@ -1,7 +1,7 @@
 import { AppContainer, MainContainer } from '@affine/component/workspace';
 import { config } from '@affine/env';
 import { NoSsr } from '@mui/material';
-import { affinePluginsAtom } from '@toeverything/plugin-infra/manager';
+import { affinePluginsAtom } from '@toeverything/plugin-infra/atom';
 import { useAtomValue } from 'jotai';
 import type { ReactElement } from 'react';
 import { Suspense } from 'react';

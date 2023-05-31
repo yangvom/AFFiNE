@@ -8,8 +8,11 @@ import { assertExists } from '@blocksuite/store';
 import { useBlockSuitePageMeta } from '@toeverything/hooks/use-block-suite-page-meta';
 import { useBlockSuiteWorkspacePage } from '@toeverything/hooks/use-block-suite-workspace-page';
 import { useBlockSuiteWorkspacePageTitle } from '@toeverything/hooks/use-block-suite-workspace-page-title';
-import { affinePluginsAtom } from '@toeverything/plugin-infra/manager';
-import type { PluginUIAdapter } from '@toeverything/plugin-infra/type';
+import { affinePluginsAtom } from '@toeverything/plugin-infra/atom';
+import type {
+  PluginAsyncCall,
+  PluginUIAdapter,
+} from '@toeverything/plugin-infra/type';
 import type { ExpectedLayout } from '@toeverything/plugin-infra/type';
 import type { PluginBlockSuiteAdapter } from '@toeverything/plugin-infra/type';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
@@ -99,11 +102,16 @@ const EditorWrapper = memo(function EditorWrapper({
             dispose = onLoad(page, editor);
           }
           const uiDecorators = plugins
-            .map(plugin => plugin.blockSuiteAdapter.uiDecorator)
-            .filter((ui): ui is PluginBlockSuiteAdapter['uiDecorator'] =>
-              Boolean(ui)
-            );
-          const disposes = uiDecorators.map(ui => ui(editor));
+            .map(
+              plugin =>
+                [
+                  plugin.blockSuiteAdapter
+                    .uiDecorator as PluginBlockSuiteAdapter['uiDecorator'],
+                  plugin.rpc.serverSide,
+                ] as const
+            )
+            .filter(([ui]) => Boolean(ui));
+          const disposes = uiDecorators.map(([ui, rpc]) => ui(editor, rpc));
           return () => {
             disposes.map(fn => fn());
             dispose();
@@ -117,11 +125,13 @@ const EditorWrapper = memo(function EditorWrapper({
 
 const PluginContentAdapter = memo<{
   detailContent: PluginUIAdapter['detailContent'];
-}>(function PluginContentAdapter({ detailContent }) {
+  rpc: PluginAsyncCall;
+}>(function PluginContentAdapter({ detailContent, rpc }) {
   return (
     <div>
       {detailContent({
         contentLayoutAtom,
+        rpc,
       })}
     </div>
   );
@@ -178,6 +188,7 @@ export const PageDetailEditor: FC<PageDetailEditorProps> = props => {
                 <Suspense>
                   <PluginContentAdapter
                     detailContent={plugin.uiAdapter.detailContent}
+                    rpc={plugin.rpc.serverSide}
                   />
                 </Suspense>
               );

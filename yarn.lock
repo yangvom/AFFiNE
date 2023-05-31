@@ -30,11 +30,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@affine/bookmark-block@workspace:^, @affine/bookmark-block@workspace:plugins/bookmark-block":
+"@affine/bookmark-block@workspace:*, @affine/bookmark-block@workspace:plugins/bookmark-block":
   version: 0.0.0-use.local
   resolution: "@affine/bookmark-block@workspace:plugins/bookmark-block"
   dependencies:
     "@toeverything/plugin-infra": "workspace:*"
+    cheerio: ^1.0.0-rc.12
+    got: ^13.0.0
     react: 18.3.0-canary-16d053d59-20230506
     react-dom: 18.3.0-canary-16d053d59-20230506
   peerDependencies:
@@ -157,7 +159,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@affine/debug@workspace:packages/debug"
   dependencies:
-    "@affine/env": "workspace:*"
     "@types/debug": ^4.1.8
     debug: ^4.3.4
   languageName: unknown
@@ -168,8 +169,9 @@ __metadata:
   resolution: "@affine/electron@workspace:apps/electron"
   dependencies:
     "@affine-test/kit": "workspace:*"
-    "@affine/bookmark-block": "workspace:^"
+    "@affine/bookmark-block": "workspace:*"
     "@affine/native": "workspace:*"
+    "@affine/workspace": "workspace:*"
     "@electron-forge/cli": ^6.1.1
     "@electron-forge/core": ^6.1.1
     "@electron-forge/core-utils": ^6.1.1
@@ -183,7 +185,7 @@ __metadata:
     "@types/better-sqlite3": ^7.6.4
     "@types/fs-extra": ^11.0.1
     "@types/uuid": ^9.0.1
-    async-call-rpc: ^6.3.0
+    async-call-rpc: ^6.3.1
     better-sqlite3: ^8.4.0
     cheerio: ^1.0.0-rc.12
     chokidar: ^3.5.3
@@ -194,6 +196,7 @@ __metadata:
     electron-updater: ^5.3.0
     electron-window-state: ^5.0.3
     esbuild: ^0.17.19
+    esbuild-plugin-replace: ^1.4.0
     fs-extra: ^11.1.1
     lodash-es: ^4.17.21
     nanoid: ^4.0.2
@@ -9084,7 +9087,7 @@ __metadata:
     "@blocksuite/global": 0.0.0-20230531080915-ca9c55a2-nightly
     "@blocksuite/lit": 0.0.0-20230531080915-ca9c55a2-nightly
     "@blocksuite/store": 0.0.0-20230531080915-ca9c55a2-nightly
-    async-call-rpc: =6.2.1
+    async-call-rpc: ^6.3.1
     jotai: ^2.1.0
   peerDependencies:
     "@blocksuite/blocks": "*"
@@ -11311,17 +11314,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"async-call-rpc@npm:=6.2.1":
-  version: 6.2.1
-  resolution: "async-call-rpc@npm:6.2.1"
-  checksum: 95e7c93f756334d686dda46851533dd675b724abe63473dfb855fee8c2b931ad15b45caeebbde5a7942f507504fbb46d659ae6f43308e8a09ffcb7c901c5dda9
-  languageName: node
-  linkType: hard
-
-"async-call-rpc@npm:^6.3.0":
-  version: 6.3.0
-  resolution: "async-call-rpc@npm:6.3.0"
-  checksum: cc2d6f6c8e37ca6ed96862b9e7e5ef64da5e2076240244381aaa6455d535b01de0777c7896f3a17f2f1ae9e45ff3e568def7ffb946fe1826dff8f3dec70b359b
+"async-call-rpc@npm:^6.3.1":
+  version: 6.3.1
+  resolution: "async-call-rpc@npm:6.3.1"
+  checksum: 024e1bab4752b3aa66145977d534e6dc4c316e1d746c11a6a5076b30b16d42fa0ce4793be5a330319644f1335b01cbe13ee4ac28454cded37b1c803608400934
   languageName: node
   linkType: hard
 
@@ -14712,6 +14708,15 @@ __metadata:
   version: 0.2.1
   resolution: "esbuild-plugin-alias@npm:0.2.1"
   checksum: afe2d2c8b5f09d5321cb8d9c0825e8a9f6e03c2d50df92f953a291d4620cc29eddb3da9e33b238f6d8f77738e0277bdcb831f127399449fecf78fb84c04e5da9
+  languageName: node
+  linkType: hard
+
+"esbuild-plugin-replace@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "esbuild-plugin-replace@npm:1.4.0"
+  dependencies:
+    magic-string: ^0.25.7
+  checksum: c84225d79f3c95dfbee2b1a840ebe8cbca20a6045208375b1a1ea669e81fbf2f6cb3332206c426386d00559e72ec709e81f11d45c94d5dfa3a50f6ffa06f2820
   languageName: node
   linkType: hard
 
@@ -20459,6 +20464,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"magic-string@npm:^0.25.7":
+  version: 0.25.9
+  resolution: "magic-string@npm:0.25.9"
+  dependencies:
+    sourcemap-codec: ^1.4.8
+  checksum: 9a0e55a15c7303fc360f9572a71cffba1f61451bc92c5602b1206c9d17f492403bf96f946dfce7483e66822d6b74607262e24392e87b0ac27b786e69a40e9b1a
+  languageName: node
+  linkType: hard
+
 "magic-string@npm:^0.27.0":
   version: 0.27.0
   resolution: "magic-string@npm:0.27.0"
@@ -25174,6 +25188,13 @@ __metadata:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 59ce8640cf3f3124f64ac289012c2b8bd377c238e316fb323ea22fbfe83da07d81e000071d7242cad7a23cd91c7de98e4df8830ec3f133cb6133a5f6e9f67bc2
+  languageName: node
+  linkType: hard
+
+"sourcemap-codec@npm:^1.4.8":
+  version: 1.4.8
+  resolution: "sourcemap-codec@npm:1.4.8"
+  checksum: b57981c05611afef31605732b598ccf65124a9fcb03b833532659ac4d29ac0f7bfacbc0d6c5a28a03e84c7510e7e556d758d0bb57786e214660016fb94279316
   languageName: node
   linkType: hard
 

@@ -1,7 +1,12 @@
+import { rootStore } from '@affine/workspace/store';
+import { affinePluginsAtom } from '@toeverything/plugin-infra/atom';
+import { AsyncCall } from 'async-call-rpc';
+import { MessageChannelMain } from 'electron';
 import { BrowserWindow, nativeTheme } from 'electron';
 import electronWindowState from 'electron-window-state';
 import { join } from 'path';
 
+import { MessagePortElectronChannel } from './async-call-rpc/message-port-electron-channel';
 import { getExposedMeta } from './exposed';
 import { logger } from './logger';
 import { isMacOS, isWindows } from './utils';
@@ -111,6 +116,25 @@ export async function restoreOrCreateWindow() {
     browserWindow.restore();
     logger.info('restore main window');
   }
+
+  await import('@affine/bookmark-block/server');
+
+  rootStore.sub(affinePluginsAtom, () => {
+    const plugins = rootStore.get(affinePluginsAtom);
+    Object.entries(plugins).map(([id, plugin]) => {
+      logger.info('init plugin: ', id);
+      const { port1, port2 } = new MessageChannelMain();
+      AsyncCall(plugin.rpc.serverSide, {
+        channel: new MessagePortElectronChannel(port2),
+      });
+      port2.postMessage(`plugin:${plugin.definition.id}`);
+      browserWindow.webContents.postMessage('plugin-port', null, [port1]);
+    });
+    if (!browserWindow) {
+      logger.error('cannot find browser window');
+      return;
+    }
+  });
 
   return browserWindow;
 }
