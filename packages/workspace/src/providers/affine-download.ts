@@ -17,11 +17,10 @@ export const createAffineDownloadProvider = (
   const callbacks = new Set<() => void>();
   return {
     flavour: 'affine-download',
-    background: true,
+    passive: true,
     get connected() {
       return connected;
     },
-    callbacks,
     connect: () => {
       logger.info('connect download provider', id);
       if (hashMap.has(id)) {
