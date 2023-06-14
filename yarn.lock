@@ -312,6 +312,7 @@ __metadata:
     msw: ^1.2.1
     nanoid: ^4.0.2
     nx: 16.3.2
+    nx-ignore: ^16.3.0
     nyc: ^15.1.0
     prettier: ^2.8.8
     react: 18.3.0-canary-16d053d59-20230506
@@ -21944,6 +21945,18 @@ __metadata:
   version: 2.1.0
   resolution: "num-sort@npm:2.1.0"
   checksum: 5a80cd0456c8847f71fb80ad3c3596714cebede76de585aa4fed2b9a4fb0907631edca1f7bb31c24dbb9928b66db3d03059994cc365d2ae011b80ddddac28f6e
+  languageName: node
+  linkType: hard
+
+"nx-ignore@npm:^16.3.0":
+  version: 16.3.0
+  resolution: "nx-ignore@npm:16.3.0"
+  dependencies:
+    "@swc/helpers": 0.5.1
+    fs-extra: ^10.1.0
+  bin:
+    nx-ignore: src/index.js
+  checksum: e517a755be090e2a3024079c5daa654d0c56b040ce4106d5683cc8133266b16e30d0e36c28e57d59e48c27b8a2adbb4dfcfa535c2601e56bae6416cba22b680b
   languageName: node
   linkType: hard
 
