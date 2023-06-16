@@ -11087,12 +11087,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@toeverything/mylib@workspace:packages/mylib":
-  version: 0.0.0-use.local
-  resolution: "@toeverything/mylib@workspace:packages/mylib"
-  languageName: unknown
-  linkType: soft
-
 "@toeverything/plugin-infra@workspace:*, @toeverything/plugin-infra@workspace:packages/plugin-infra":
   version: 0.0.0-use.local
   resolution: "@toeverything/plugin-infra@workspace:packages/plugin-infra"
