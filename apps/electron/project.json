@@ -1,0 +1,40 @@
+{
+  "name": "desktop",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/electron/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "apps/electron/dist",
+        "main": "apps/electron/src/main/index.ts",
+        "additionalEntryPoints": [
+          "apps/electron/src/preload/index.ts",
+          "apps/electron/src/helper/index.ts",
+          "apps/electron/src/main/workers/plugin.worker.ts"
+        ],
+        "tsConfig": "apps/electron/tsconfig.lib.json",
+        "external": [
+          "electron",
+          "electron-updater",
+          "@toeverything/plugin-infra",
+          "async-call-rpc"
+        ],
+        "generatePackageJson": false,
+        "esbuildOptions": {
+          "format": ".cjs",
+          "bundle": true,
+          "treeShaking": true,
+          "platform": "node",
+          "loader": {
+            ".node": "copy"
+          },
+          "assetNames": "[name]"
+        }
+      }
+    }
+  },
+  "tags": []
+}

@@ -18,7 +18,11 @@
       "{workspaceRoot}/tsconfig.json",
       "{workspaceRoot}/nx.json"
     ],
-    "production": ["default"]
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -65,15 +69,20 @@
     "e2e": {
       "dependsOn": ["^build"],
       "inputs": [
-        { "runtime": "node -v" },
-        { "runtime": "yarn playwright --version" }
+        {
+          "runtime": "node -v"
+        },
+        {
+          "runtime": "yarn playwright --version"
+        }
       ]
     },
     "e2e:coverage": {
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^production"]
     },
     "test:ui": {
       "dependsOn": ["^build"]

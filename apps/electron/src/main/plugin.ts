@@ -1,10 +1,10 @@
 import { join, resolve } from 'node:path';
 import { Worker } from 'node:worker_threads';
 
-import { logger } from '@affine/electron/main/logger';
 import { AsyncCall } from 'async-call-rpc';
 import { ipcMain } from 'electron';
 
+import { logger } from './logger';
 import { MessageEventChannel } from './utils';
 
 declare global {

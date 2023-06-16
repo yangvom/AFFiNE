@@ -14,7 +14,7 @@ import {
 import { logger } from './logger';
 import { MessageEventChannel } from './utils';
 
-const HELPER_PROCESS_PATH = path.join(__dirname, './helper.js');
+const HELPER_PROCESS_PATH = path.join(__dirname, '../helper.js');
 
 function pickAndBind<T extends object, U extends keyof T>(
   obj: T,
