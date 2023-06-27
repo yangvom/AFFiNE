@@ -13,10 +13,20 @@ import {
 } from 'langchain/schema';
 import { z } from 'zod';
 
-import { createChatAI } from '../chat';
+import { createChatAI } from './chat';
 
 const followupResponseSchema = z.array(z.string());
 
+type Copilot = {
+  id: string;
+  name: string;
+  prompt: string;
+};
+
+/**
+ * OpenAI API key, used to create all chat instances.
+ *  If this is `null`, skip all UIs.
+ */
 export const openAIApiKeyAtom = atomWithStorage<string | null>(
   'com.affine.copilot.openai.token',
   null
