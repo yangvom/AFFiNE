@@ -5,6 +5,8 @@ export const labelStyle = style({
   alignItems: 'center',
   gap: '10px',
   cursor: 'pointer',
+  width: '46px',
+  height: '26px',
 });
 export const inputStyle = style({
   opacity: 0,
@@ -12,13 +14,13 @@ export const inputStyle = style({
 });
 export const switchStyle = style({
   position: 'relative',
-  width: '46px',
-  height: '26px',
+  width: '44px',
+  height: '24px',
   background: 'var(--affine-toggle-disable-background-color)',
   borderRadius: '37px',
   transition: '200ms all',
-  border: '1px solid var(--affine-black-10)',
-  boxShadow: 'var(--affine-toggle-circle-shadow)',
+  transform: 'translate(1px, 1px)',
+  boxShadow: '0 0 0 1px var(--affine-black-10)',
   selectors: {
     '&:before': {
       transition: 'all .2s cubic-bezier(0.27, 0.2, 0.25, 1.51)',
@@ -28,9 +30,9 @@ export const switchStyle = style({
       height: '20px',
       borderRadius: '50%',
       top: '50%',
-      border: '1px solid var(--affine-black-10)',
       background: 'var(--affine-white)',
-      transform: 'translate(1px, -50%)',
+      transform: 'translate(2px, -50%)',
+      boxShadow: '0 0 0 1px var(--affine-black-10) inset',
     },
   },
 });
