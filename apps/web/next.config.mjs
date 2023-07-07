@@ -159,6 +159,10 @@ if (process.env.NODE_ENV === 'development') {
       source: '/socket.io',
       destination: 'http://localhost:3010/socket.io/',
     },
+    {
+      source: '/api/proxy/image',
+      destination: 'http://localhost:3010/api/proxy/image',
+    },
   ];
 }
 

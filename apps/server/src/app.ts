@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { ConfigModule } from './config';
 import { BusinessModules } from './modules';
 import { PrismaModule } from './prisma';
+import { ProxyImageController } from './proxy-image.controller';
 import { StorageModule } from './storage';
 
 @Module({
@@ -13,6 +14,6 @@ import { StorageModule } from './storage';
     StorageModule.forRoot(),
     ...BusinessModules,
   ],
-  controllers: [AppController],
+  controllers: [AppController, ProxyImageController],
 })
 export class AppModule {}

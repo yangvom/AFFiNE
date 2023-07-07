@@ -32,6 +32,14 @@ app.use(
   })
 );
 
+app.use(
+  '/api/proxy/image',
+  createProxyMiddleware({
+    target: 'http://localhost:3010/api/proxy/image',
+    changeOrigin: true,
+  })
+);
+
 app.use('/_debug/*', express.static('out/_debug/*.html'));
 app.use(
   '/workspace/*/all',
