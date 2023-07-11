@@ -8,9 +8,13 @@ import type {
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import { useBlockSuiteWorkspaceName } from '@toeverything/hooks/use-block-suite-workspace-name';
+import { useClipboard } from 'foxact/use-clipboard';
 import type { FC } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
+import { useIsPublicCloudWorkspace } from '../../../hooks/affine/use-is-public-cloud-workspace';
+import { useShareLink } from '../../../hooks/affine/use-share-link';
+import { useToggleCloudPublic } from '../../../hooks/affine/use-toggle-cloud-public';
 import type { AffineOfficialWorkspace } from '../../../shared';
 import { toast } from '../../../utils';
 import { EnableAffineCloudModal } from '../enable-affine-cloud-modal';
@@ -40,52 +44,54 @@ export type PublishPanelAffineProps = Omit<
 const PublishPanelAffine: FC<PublishPanelAffineProps> = props => {
   const { workspace } = props;
   const t = useAFFiNEI18N();
-  // const toggleWorkspacePublish = useToggleWorkspacePublish(workspace);
+  const isPublic = useIsPublicCloudWorkspace(workspace.id);
+  const toggleWorkspacePublic = useToggleCloudPublic(workspace.id);
 
-  const [origin, setOrigin] = useState('');
-  const shareUrl = origin + '/public-workspace/' + workspace.id;
+  const shareLink = useShareLink(workspace.id);
 
-  useEffect(() => {
-    setOrigin(
-      typeof window !== 'undefined' && window.location.origin
-        ? window.location.origin
-        : ''
-    );
-  }, []);
+  const { copy } = useClipboard({
+    onCopyError: useCallback(() => {
+      toast('Failed to copy link to clipboard');
+    }, []),
+  });
 
   const copyUrl = useCallback(async () => {
-    await navigator.clipboard.writeText(shareUrl);
+    await copy(shareLink);
     toast(t['Copied link to clipboard']());
-  }, [shareUrl, t]);
+  }, [shareLink, t, copy]);
+
+  const handleClick = useCallback(() => {
+    window.open(shareLink, '_blank');
+  }, [shareLink]);
   return (
     <>
       <SettingRow
         name={t['Publish']()}
-        desc={
-          // workspace.public ? t['Unpublished hint']() : t['Published hint']()
-          'UNFINISHED'
-        }
+        desc={isPublic ? t['Unpublished hint']() : t['Published hint']()}
       >
-        {/* <Switch
-          checked={workspace.public}
-          onChange={checked => toggleWorkspacePublish(checked)}
-        /> */}
+        <Switch
+          checked={isPublic}
+          onChange={checked => toggleWorkspacePublic(checked)}
+        />
       </SettingRow>
-      <FlexWrapper justifyContent="space-between">
-        <Button
-          className={style.urlButton}
-          size="middle"
-          onClick={useCallback(() => {
-            window.open(shareUrl, '_blank');
-          }, [shareUrl])}
-          title={shareUrl}
+      {isPublic ? (
+        <FlexWrapper
+          justifyContent="space-between"
+          style={{ marginBottom: '24px' }}
         >
-          {shareUrl}
-        </Button>
-        <Button size="middle" onClick={copyUrl}>
-          {t['Copy']()}
-        </Button>
-      </FlexWrapper>
+          <Button
+            className={style.urlButton}
+            size="middle"
+            onClick={handleClick}
+            title={shareLink}
+          >
+            {shareLink}
+          </Button>
+          <Button size="middle" onClick={copyUrl}>
+            {t['Copy']()}
+          </Button>
+        </FlexWrapper>
+      ) : null}
     </>
   );
 };

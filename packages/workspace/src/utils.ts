@@ -3,6 +3,7 @@ import type { BlockSuiteFeatureFlags } from '@affine/env/global';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import {
   createAffineProviders,
+  createAffinePublicProviders,
   createLocalProviders,
 } from '@affine/workspace/providers';
 import { __unstableSchemas, AffineSchemas } from '@blocksuite/blocks/models';
@@ -36,6 +37,10 @@ export function createEmptyBlockSuiteWorkspace(
 ): Workspace;
 export function createEmptyBlockSuiteWorkspace(
   id: string,
+  flavour: WorkspaceFlavour.AFFINE_PUBLIC
+): Workspace;
+export function createEmptyBlockSuiteWorkspace(
+  id: string,
   flavour: WorkspaceFlavour
 ): Workspace {
   const providerCreators: DocProviderCreator[] = [];
@@ -45,18 +50,17 @@ export function createEmptyBlockSuiteWorkspace(
   const idGenerator = Generator.NanoID;
 
   const blobStorages: StoreOptions['blobStorages'] = [];
-
   if (flavour === WorkspaceFlavour.AFFINE_CLOUD) {
     if (isBrowser) {
       blobStorages.push(createIndexeddbStorage);
       if (isDesktop && runtimeConfig.enableSQLiteProvider) {
         blobStorages.push(createSQLiteStorage);
       }
+      providerCreators.push(...createAffineProviders());
 
       // todo(JimmFly): add support for cloud storage
     }
-    providerCreators.push(...createAffineProviders());
-  } else {
+  } else if (flavour === WorkspaceFlavour.LOCAL) {
     if (isBrowser) {
       blobStorages.push(createIndexeddbStorage);
       if (isDesktop && runtimeConfig.enableSQLiteProvider) {
@@ -64,6 +68,16 @@ export function createEmptyBlockSuiteWorkspace(
       }
     }
     providerCreators.push(...createLocalProviders());
+  } else if (flavour === WorkspaceFlavour.AFFINE_PUBLIC) {
+    if (isBrowser) {
+      blobStorages.push(createIndexeddbStorage);
+      if (isDesktop && runtimeConfig.enableSQLiteProvider) {
+        blobStorages.push(createSQLiteStorage);
+      }
+    }
+    providerCreators.push(...createAffinePublicProviders());
+  } else {
+    throw new Error('unsupported flavour');
   }
   blobStorages.push(createStaticStorage);
 

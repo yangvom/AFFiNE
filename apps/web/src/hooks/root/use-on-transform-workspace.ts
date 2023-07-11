@@ -1,34 +1,58 @@
-import type { WorkspaceRegistry } from '@affine/env/workspace';
-import type { WorkspaceFlavour } from '@affine/env/workspace';
-import { rootCurrentWorkspaceIdAtom } from '@affine/workspace/atom';
-import { useSetAtom } from 'jotai';
+import type {
+  WorkspaceFlavour,
+  WorkspaceRegistry,
+} from '@affine/env/workspace';
+import { WorkspaceVersion } from '@affine/env/workspace';
+import {
+  rootWorkspacesMetadataAtom,
+  workspaceAdaptersAtom,
+} from '@affine/workspace/atom';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback } from 'react';
 
-import { useTransformWorkspace } from '../use-transform-workspace';
+import { openSettingModalAtom } from '../../atoms';
 
 export function useOnTransformWorkspace() {
-  const transformWorkspace = useTransformWorkspace();
-  const setWorkspaceId = useSetAtom(rootCurrentWorkspaceIdAtom);
+  const setSettingModal = useSetAtom(openSettingModalAtom);
+  const WorkspaceAdapters = useAtomValue(workspaceAdaptersAtom);
+  const setMetadata = useSetAtom(rootWorkspacesMetadataAtom);
   return useCallback(
     async <From extends WorkspaceFlavour, To extends WorkspaceFlavour>(
       from: From,
       to: To,
       workspace: WorkspaceRegistry[From]
     ): Promise<void> => {
-      const workspaceId = await transformWorkspace(from, to, workspace);
+      // create first, then delete, in case of failure
+      const newId = await WorkspaceAdapters[to].CRUD.create(
+        workspace.blockSuiteWorkspace
+      );
+      await WorkspaceAdapters[from].CRUD.delete(workspace.blockSuiteWorkspace);
+      await setMetadata(workspaces => {
+        const idx = workspaces.findIndex(ws => ws.id === workspace.id);
+        workspaces.splice(idx, 1, {
+          id: newId,
+          flavour: to,
+          version: WorkspaceVersion.SubDoc,
+        });
+        return [...workspaces];
+      }, newId);
+      // fixme(himself65): setting modal could still open and open the non-exist workspace
+      setSettingModal(settings => ({
+        ...settings,
+        open: false,
+      }));
       window.dispatchEvent(
         new CustomEvent('affine-workspace:transform', {
           detail: {
             from,
             to,
             oldId: workspace.id,
-            newId: workspaceId,
+            newId: newId,
           },
         })
       );
-      setWorkspaceId(workspaceId);
     },
-    [setWorkspaceId, transformWorkspace]
+    [WorkspaceAdapters, setMetadata, setSettingModal]
   );
 }
 

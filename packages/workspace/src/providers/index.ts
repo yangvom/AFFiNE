@@ -1,5 +1,6 @@
 import { DebugLogger } from '@affine/debug';
 import type {
+  AffineSocketIOProvider,
   LocalIndexedDBBackgroundProvider,
   LocalIndexedDBDownloadProvider,
 } from '@affine/env/workspace';
@@ -14,6 +15,8 @@ import {
 } from '@toeverything/y-indexeddb';
 import type { Doc } from 'yjs';
 
+import { SocketIOProvider } from '../affine/sync-socket-io';
+import { createPublicCloudProvider } from './cloud';
 import {
   createSQLiteDBDownloadProvider,
   createSQLiteProvider,
@@ -21,6 +24,32 @@ import {
 
 const Y = Workspace.Y;
 const logger = new DebugLogger('indexeddb-provider');
+
+const createAffineSocketIOProvider: DocProviderCreator = (
+  id,
+  doc,
+  { awareness }
+): AffineSocketIOProvider => {
+  const provider = new SocketIOProvider('/', id, doc, {
+    awareness,
+  });
+  return {
+    flavour: 'affine-socket-io',
+    passive: true,
+    get connected() {
+      return provider.connected;
+    },
+    connect: () => {
+      provider.connect();
+    },
+    disconnect: () => {
+      provider.disconnect();
+    },
+    cleanup: () => {
+      provider.destroy();
+    },
+  } satisfies AffineSocketIOProvider;
+};
 
 const createIndexedDBBackgroundProvider: DocProviderCreator = (
   id,
@@ -73,6 +102,7 @@ const createIndexedDBDownloadProvider: DocProviderCreator = (
     _resolve = resolve;
     _reject = reject;
   });
+
   async function downloadBinaryRecursively(doc: Doc) {
     if (cache.has(doc)) {
       const binary = cache.get(doc) as Uint8Array;
@@ -86,6 +116,7 @@ const createIndexedDBDownloadProvider: DocProviderCreator = (
     }
     await Promise.all([...doc.subdocs].map(downloadBinaryRecursively));
   }
+
   return {
     flavour: 'local-indexeddb',
     active: true,
@@ -103,6 +134,7 @@ const createIndexedDBDownloadProvider: DocProviderCreator = (
 };
 
 export {
+  createAffineSocketIOProvider,
   createBroadcastChannelProvider,
   createIndexedDBBackgroundProvider,
   createIndexedDBDownloadProvider,
@@ -130,9 +162,15 @@ export const createLocalProviders = (): DocProviderCreator[] => {
 export const createAffineProviders = (): DocProviderCreator[] => {
   return (
     [
+      ...createLocalProviders(),
       runtimeConfig.enableBroadcastChannelProvider &&
         createBroadcastChannelProvider,
+      runtimeConfig.enableCloud && createAffineSocketIOProvider,
       createIndexedDBDownloadProvider,
     ] as DocProviderCreator[]
   ).filter(v => Boolean(v));
+};
+
+export const createAffinePublicProviders = (): DocProviderCreator[] => {
+  return [createPublicCloudProvider];
 };

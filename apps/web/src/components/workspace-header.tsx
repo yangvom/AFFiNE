@@ -35,7 +35,9 @@ export function WorkspaceHeader({
 
   const currentWorkspace = useWorkspace(currentWorkspaceId);
 
-  const getPageInfoById = useGetPageInfoById();
+  const getPageInfoById = useGetPageInfoById(
+    currentWorkspace.blockSuiteWorkspace
+  );
   if ('subPath' in currentEntry) {
     if (currentEntry.subPath === WorkspaceSubPath.ALL) {
       const leftSlot = (
@@ -116,7 +118,8 @@ export function WorkspaceHeader({
     }
   } else if ('pageId' in currentEntry) {
     const pageId = currentEntry.pageId;
-    const isPublic = currentWorkspace.flavour === WorkspaceFlavour.PUBLIC;
+    const isPublic =
+      currentWorkspace.flavour === WorkspaceFlavour.AFFINE_PUBLIC;
     return (
       <BlockSuiteEditorHeader
         isPublic={isPublic}

@@ -13,20 +13,26 @@ export class Storage {
   ): Promise<Storage>;
   /** Get a workspace by id */
   getWorkspace(workspaceId: string): Promise<Workspace | null>;
-  /** Create a new workspace with a init update. */
-  createWorkspace(workspaceId: string, init: Buffer): Promise<Workspace>;
+  /** Create a new workspace. */
+  createWorkspace(workspaceId: string): Promise<Workspace>;
   /** Delete a workspace. */
   deleteWorkspace(workspaceId: string): Promise<void>;
   /** Sync doc updates. */
   sync(workspaceId: string, guid: string, update: Buffer): Promise<void>;
   /** Sync doc update with doc guid encoded. */
   syncWithGuid(workspaceId: string, update: Buffer): Promise<void>;
-  /** Load doc as update buffer. */
+  /** Load doc as update buffer, underlying will first merge all update records with yrs. */
   load(guid: string): Promise<Buffer | null>;
+  /** Load doc as raw array update buffer. */
+  loadBuffer(guid: string): Promise<Array<Buffer> | null>;
+  /** List all blobs in a workspace. */
+  listBlobs(workspaceId?: string | undefined | null): Promise<Array<string>>;
   /** Fetch a workspace blob. */
-  blob(workspaceId: string, name: string): Promise<Blob | null>;
+  getBlob(workspaceId: string, name: string): Promise<Blob | null>;
   /** Upload a blob into workspace storage. */
   uploadBlob(workspaceId: string, blob: Buffer): Promise<string>;
+  /** Delete a blob from workspace storage. */
+  deleteBlob(workspaceId: string, hash: string): Promise<boolean>;
   /** Workspace size taken by blobs. */
   blobsSize(workspaceId: string): Promise<number>;
 }

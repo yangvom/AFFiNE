@@ -21,6 +21,11 @@ type UserType {
   avatarUrl: String
 
   """
+  User email verified
+  """
+  emailVerified: DateTime
+
+  """
   User created date
   """
   createdAt: DateTime
@@ -37,6 +42,54 @@ type TokenType {
   refresh: String!
 }
 
+type InviteUserType {
+  """
+  User name
+  """
+  name: String
+
+  """
+  User email
+  """
+  email: String
+
+  """
+  User avatar url
+  """
+  avatarUrl: String
+
+  """
+  User email verified
+  """
+  emailVerified: DateTime
+
+  """
+  User created date
+  """
+  createdAt: DateTime
+  id: ID!
+
+  """
+  User permission in workspace
+  """
+  permission: Permission!
+
+  """
+  User accepted
+  """
+  accepted: Boolean!
+}
+
+"""
+User permission in workspace
+"""
+enum Permission {
+  Read
+  Write
+  Admin
+  Owner
+}
+
 type WorkspaceType {
   id: ID!
 
@@ -51,6 +104,11 @@ type WorkspaceType {
   createdAt: DateTime!
 
   """
+  Members of workspace
+  """
+  members: [InviteUserType!]!
+
+  """
   Permission of current signed in user in workspace
   """
   permission: Permission!
@@ -61,24 +119,14 @@ type WorkspaceType {
   memberCount: Int!
 
   """
+  Shared pages of workspace
+  """
+  sharedPages: [String!]!
+
+  """
   Owner of workspace
   """
   owner: UserType!
-
-  """
-  Members of workspace
-  """
-  members: [UserType!]!
-}
-
-"""
-User permission in workspace
-"""
-enum Permission {
-  Read
-  Write
-  Admin
-  Owner
 }
 
 type Query {
@@ -88,9 +136,24 @@ type Query {
   workspaces: [WorkspaceType!]!
 
   """
+  Get public workspace by id
+  """
+  publicWorkspace(id: String!): WorkspaceType!
+
+  """
   Get workspace by id
   """
   workspace(id: String!): WorkspaceType!
+
+  """
+  List blobs of workspace
+  """
+  listBlobs(workspaceId: String!): [String!]!
+
+  """
+  Get all users
+  """
+  currentUser: UserType!
 
   """
   Get user by email
@@ -99,9 +162,6 @@ type Query {
 }
 
 type Mutation {
-  register(name: String!, email: String!, password: String!): UserType!
-  signIn(email: String!, password: String!): UserType!
-
   """
   Create a new workspace
   """
@@ -120,12 +180,17 @@ type Mutation {
   revoke(workspaceId: String!, userId: String!): Boolean!
   acceptInvite(workspaceId: String!): Boolean!
   leaveWorkspace(workspaceId: String!): Boolean!
-  uploadBlob(workspaceId: String!, blob: Upload!): String!
+  sharePage(workspaceId: String!, pageId: String!): Boolean!
+  revokePage(workspaceId: String!, pageId: String!): Boolean!
+  setBlob(workspaceId: String!, blob: Upload!): String!
+  deleteBlob(workspaceId: String!, hash: String!): Boolean!
 
   """
   Upload user avatar
   """
   uploadAvatar(id: String!, avatar: Upload!): UserType!
+  signUp(name: String!, email: String!, password: String!): UserType!
+  signIn(email: String!, password: String!): UserType!
 }
 
 """

@@ -39,13 +39,13 @@ import { useRouter } from 'next/router';
 import type { FC, PropsWithChildren, ReactElement } from 'react';
 import { lazy, Suspense, useCallback, useEffect, useMemo } from 'react';
 
-import { WorkspaceAdapters } from '../adapters/workspace';
 import {
   openQuickSearchModalAtom,
   openSettingModalAtom,
   openWorkspacesModalAtom,
 } from '../atoms';
 import { useTrackRouterHistoryEffect } from '../atoms/history';
+import { AdapterProviderWrapper } from '../components/adapter-worksapce-wrapper';
 import { AppContainer } from '../components/affine/app-container';
 import type { IslandItemNames } from '../components/pure/help-island';
 import { HelpIsland } from '../components/pure/help-island';
@@ -70,10 +70,6 @@ const QuickSearchModal = lazy(() =>
     default: module.QuickSearchModal,
   }))
 );
-
-function DefaultProvider({ children }: PropsWithChildren) {
-  return <>{children}</>;
-}
 
 export const QuickSearch: FC = () => {
   const [currentWorkspace] = useCurrentWorkspace();
@@ -145,33 +141,37 @@ export const CurrentWorkspaceContext = ({
 export const WorkspaceLayout: FC<PropsWithChildren> =
   function WorkspacesSuspense({ children }) {
     useTrackRouterHistoryEffect();
+    const router = useRouter();
     const currentWorkspaceId = useAtomValue(rootCurrentWorkspaceIdAtom);
     const jotaiWorkspaces = useAtomValue(rootWorkspacesMetadataAtom);
     const meta = useMemo(
       () => jotaiWorkspaces.find(x => x.id === currentWorkspaceId),
       [currentWorkspaceId, jotaiWorkspaces]
     );
+    if (!meta && currentWorkspaceId) {
+      console.warn('cannot find workspace id', currentWorkspaceId);
+      router.push('/').catch(console.error);
+    }
 
-    const Provider =
-      (meta && WorkspaceAdapters[meta.flavour].UI.Provider) ?? DefaultProvider;
+    if (!meta) {
+      return <WorkspaceFallback />;
+    }
+
     return (
-      <>
-        {/* load all workspaces is costly, do not block the whole UI */}
-        <Suspense fallback={null}>
-          <AllWorkspaceModals />
-          <CurrentWorkspaceContext>
-            {/* fixme(himself65): don't re-render whole modals */}
-            <CurrentWorkspaceModals key={currentWorkspaceId} />
-          </CurrentWorkspaceContext>
-        </Suspense>
+      <AdapterProviderWrapper>
         <CurrentWorkspaceContext>
           <Suspense fallback={<WorkspaceFallback />}>
-            <Provider>
-              <WorkspaceLayoutInner>{children}</WorkspaceLayoutInner>
-            </Provider>
+            <WorkspaceLayoutInner>
+              {/* load all workspaces is costly, do not block the whole UI */}
+              <Suspense fallback={null}>
+                <AllWorkspaceModals />
+                <CurrentWorkspaceModals />
+              </Suspense>
+              {children}
+            </WorkspaceLayoutInner>
           </Suspense>
         </CurrentWorkspaceContext>
-      </>
+      </AdapterProviderWrapper>
     );
   };
 
@@ -269,8 +269,7 @@ export const WorkspaceLayoutInner: FC<PropsWithChildren> = ({ children }) => {
   const helper = useBlockSuiteWorkspaceHelper(
     currentWorkspace.blockSuiteWorkspace
   );
-  const isPublicWorkspace =
-    router.pathname.split('/')[1] === 'public-workspace';
+  const isPublicWorkspace = router.pathname.split('/')[1] === 'share';
   const title = useRouterTitle(router);
   const handleCreatePage = useCallback(() => {
     return helper.createPage(nanoid());

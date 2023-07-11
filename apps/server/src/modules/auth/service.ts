@@ -13,7 +13,9 @@ import type { User } from '@prisma/client';
 import { Config } from '../../config';
 import { PrismaService } from '../../prisma';
 
-export type UserClaim = Pick<User, 'id' | 'name' | 'email' | 'createdAt'>;
+export type UserClaim = Pick<User, 'id' | 'name' | 'email' | 'createdAt'> & {
+  avatarUrl?: string;
+};
 
 export const getUtcTimestamp = () => Math.floor(new Date().getTime() / 1000);
 
@@ -32,6 +34,7 @@ export class AuthService {
           id: user.id,
           name: user.name,
           email: user.email,
+          image: user.avatarUrl,
           createdAt: user.createdAt.toISOString(),
         },
         iat: now,
@@ -58,6 +61,7 @@ export class AuthService {
           id: user.id,
           name: user.name,
           email: user.email,
+          image: user.avatarUrl,
           createdAt: user.createdAt.toISOString(),
         },
         exp: now + this.config.auth.refreshTokenExpiresIn,
@@ -119,7 +123,7 @@ export class AuthService {
     return user;
   }
 
-  async register(name: string, email: string, password: string): Promise<User> {
+  async signUp(name: string, email: string, password: string): Promise<User> {
     const user = await this.prisma.user.findFirst({
       where: {
         email,

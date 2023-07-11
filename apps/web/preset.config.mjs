@@ -30,7 +30,7 @@ const buildPreset = {
     enableSQLiteProvider: true,
     enableMoveDatabase: false,
     enableNotificationCenter: false,
-    enableCloud: false,
+    enableCloud: true,
   },
   beta: {},
   internal: {},
@@ -47,7 +47,7 @@ const buildPreset = {
     enableSQLiteProvider: true,
     enableMoveDatabase: false,
     enableNotificationCenter: true,
-    enableCloud: false,
+    enableCloud: true,
   },
 };
 

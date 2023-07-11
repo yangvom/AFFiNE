@@ -8,17 +8,14 @@ import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 
 import { AppModule } from './app';
 import { Config } from './config';
+import { RedisIoAdapter } from './modules/sync/redis-adapter';
+
+const { AFFINE_ENV } = process.env;
 
 const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-  cors: {
-    origin:
-      process.env.AFFINE_ENV === 'preview'
-        ? ['https://affine-preview.vercel.app']
-        : ['http://localhost:8080'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['x-operation-name', 'x-definition-name'],
-  },
+  cors: true,
   bodyParser: true,
+  logger: AFFINE_ENV === 'production' ? ['warn'] : ['verbose'],
 });
 
 app.use(
@@ -37,6 +34,18 @@ const port = config.port ?? 3010;
 
 if (!config.objectStorage.r2.enabled) {
   app.use('/assets', staticMiddleware(config.objectStorage.fs.path));
+}
+
+if (config.redis.enabled) {
+  const redisIoAdapter = new RedisIoAdapter(app);
+  await redisIoAdapter.connectToRedis(
+    config.redis.host,
+    config.redis.port,
+    config.redis.username,
+    config.redis.password,
+    config.redis.database
+  );
+  app.useWebSocketAdapter(redisIoAdapter);
 }
 
 await app.listen(port, host);

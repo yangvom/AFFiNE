@@ -7,7 +7,7 @@ use std::{
 };
 
 use jwst::{BlobStorage, SearchResult as JwstSearchResult, Workspace as JwstWorkspace, DocStorage};
-use jwst_storage::{JwstStorage, JwstStorageError};
+use jwst_storage::{JwstStorage, JwstStorageError, BlobStorageType};
 use yrs::{Doc as YDoc, ReadTxn, StateVector, Transact};
 
 use napi::{bindgen_prelude::*, Error, Result, Status};
@@ -98,16 +98,16 @@ impl Storage {
   #[napi]
   pub async fn connect(database: String, debug_only_auto_migrate: Option<bool>) -> Result<Storage> {
     let inner = match if cfg!(debug_assertions) && debug_only_auto_migrate.unwrap_or(false) {
-      JwstStorage::new_with_migration(&database).await
+      JwstStorage::new_with_migration(&database, BlobStorageType::DB).await
     } else {
-      JwstStorage::new(&database).await
+      JwstStorage::new(&database, BlobStorageType::DB).await
     } {
       Ok(storage) => storage,
       Err(JwstStorageError::Db(e)) => {
         return Err(Error::new(
           Status::GenericFailure,
           format!("failed to connect to database: {}", e),
-        ))
+        ));
       }
       Err(e) => return Err(Error::new(Status::GenericFailure, e.to_string())),
     };
@@ -125,9 +125,9 @@ impl Storage {
     }
   }
 
-  /// Create a new workspace with a init update.
+  /// Create a new workspace.
   #[napi]
-  pub async fn create_workspace(&self, workspace_id: String, init: Buffer) -> Result<Workspace> {
+  pub async fn create_workspace(&self, workspace_id: String) -> Result<Workspace> {
     if map_err!(self.0.docs().detect_workspace(&workspace_id).await)? {
       return Err(Error::new(
         Status::GenericFailure,
@@ -136,10 +136,6 @@ impl Storage {
     }
 
     let workspace = map_err!(self.0.create_workspace(workspace_id).await)?;
-
-    let init = init.as_ref();
-    let guid = workspace.doc_guid().to_string();
-    map_err!(self.docs().update_doc(workspace.id(), guid, init).await)?;
 
     Ok(workspace.into())
   }
@@ -165,7 +161,7 @@ impl Storage {
     map_err!(self.docs().update_doc_with_guid(workspace_id, update).await)
   }
 
-  /// Load doc as update buffer.
+  /// Load doc as update buffer, underlying will first merge all update records with yrs.
   #[napi]
   pub async fn load(&self, guid: String) -> Result<Option<Buffer>> {
     self.ensure_exists(&guid).await?;
@@ -177,9 +173,25 @@ impl Storage {
     }
   }
 
+  /// Load doc as raw array update buffer.
+  #[napi]
+  pub async fn load_buffer(&self, guid: String) -> Result<Option<Vec<Buffer>>> {
+    if let Some(doc) = map_err!(self.docs().get_doc_updates(guid).await)? {
+      Ok(Some(doc.iter().map(|item| item.clone().into()).collect()))
+    } else {
+      Ok(None)
+    }
+  }
+
+  /// List all blobs in a workspace.
+  #[napi]
+  pub async fn list_blobs(&self, workspace_id: Option<String>) -> Result<Vec<String>> {
+    map_err!(self.blobs().list_blobs(workspace_id).await)
+  }
+
   /// Fetch a workspace blob.
   #[napi]
-  pub async fn blob(&self, workspace_id: String, name: String) -> Result<Option<Blob>> {
+  pub async fn get_blob(&self, workspace_id: String, name: String) -> Result<Option<Blob>> {
     let (id, params) = {
       let path = PathBuf::from(name.clone());
       let ext = path
@@ -215,6 +227,12 @@ impl Storage {
     // TODO: can optimize, avoid copy
     let blob = blob.as_ref().to_vec();
     map_err!(self.blobs().put_blob(Some(workspace_id), blob).await)
+  }
+
+  /// Delete a blob from workspace storage.
+  #[napi]
+  pub async fn delete_blob(&self, workspace_id: String, hash: String) -> Result<bool> {
+    map_err!(self.blobs().delete_blob(Some(workspace_id), hash).await)
   }
 
   /// Workspace size taken by blobs.

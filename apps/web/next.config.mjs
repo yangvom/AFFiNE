@@ -44,10 +44,6 @@ if (process.env.COVERAGE === 'true') {
   console.info('Enable coverage report');
 }
 
-const profileTarget = {
-  local: '127.0.0.1:3000',
-};
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: process.env.NODE_ENV === 'development' ? 'standalone' : 'export',
@@ -104,7 +100,6 @@ const nextConfig = {
     BUILD_DATE: new Date().toISOString(),
     gitVersion: getGitVersion(),
     hash: getCommitHash(),
-    serverAPI: profileTarget.local,
     editorFlags: blockSuiteFeatureFlags,
     ...buildFlags,
   },
@@ -153,8 +148,20 @@ const nextConfig = {
 if (process.env.NODE_ENV === 'development') {
   nextConfig.rewrites = async () => [
     {
+      source: '/api/workspaces/:path*',
+      destination: 'http://localhost:3010/api/workspaces/:path*',
+    },
+    {
       source: '/api/auth/:path*/:path2*',
       destination: 'http://localhost:3010/api/auth/:path*/:path2*',
+    },
+    {
+      source: '/graphql',
+      destination: 'http://localhost:3010/graphql',
+    },
+    {
+      source: '/socket.io',
+      destination: 'http://localhost:3010/socket.io/',
     },
   ];
 }

@@ -18,7 +18,7 @@
 node_modules
 
 # IDEs and editors
-/.idea
+**/.idea
 .project
 .classpath
 .c9/
@@ -75,3 +75,4 @@ target
 tsconfig.node.tsbuildinfo
 lib
 affine.db
+apps/web/next-routes.conf
