@@ -1,7 +1,7 @@
 import {
   CollectionList,
   FilterList,
-  SaveCollectionButton,
+  SaveAsCollectionButton,
   useCollectionManager,
 } from '@affine/component/page-list';
 import type { Collection } from '@affine/env/filter';
@@ -64,7 +64,7 @@ export function WorkspaceHeader({
             </div>
             <div>
               {setting.currentCollection.filterList.length > 0 ? (
-                <SaveCollectionButton
+                <SaveAsCollectionButton
                   propertiesMeta={
                     currentWorkspace.blockSuiteWorkspace.meta.properties
                   }
@@ -76,7 +76,7 @@ export function WorkspaceHeader({
                     workspaceId: currentWorkspaceId,
                   }}
                   onConfirm={saveToCollection}
-                ></SaveCollectionButton>
+                ></SaveAsCollectionButton>
               ) : null}
             </div>
           </div>

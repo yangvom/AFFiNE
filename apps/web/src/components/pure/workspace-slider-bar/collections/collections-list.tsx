@@ -2,6 +2,7 @@ import { Menu } from '@affine/component';
 import { MenuItem } from '@affine/component/app-sidebar';
 import {
   EditCollectionModel,
+  NewCollection,
   useCollectionManager,
   useSavedCollections,
 } from '@affine/component/page-list';
@@ -16,6 +17,7 @@ import {
   ViewLayersIcon,
 } from '@blocksuite/icons';
 import type { PageMeta } from '@blocksuite/store';
+import { uuidv4 } from '@blocksuite/store';
 import type { DragEndEvent } from '@dnd-kit/core';
 import { useDroppable } from '@dnd-kit/core';
 import * as Collapsible from '@radix-ui/react-collapsible';
@@ -257,11 +259,23 @@ export const CollectionsList = ({ currentWorkspace }: CollectionsListProps) => {
   const metas = useBlockSuitePageMeta(currentWorkspace.blockSuiteWorkspace);
   const { savedCollections } = useSavedCollections(currentWorkspace.id);
   const getPageInfo = useGetPageInfoById();
+  const t = useAFFiNEI18N();
+  const setting = useCollectionManager(currentWorkspace.id);
+  const saveToCollection = useCallback(
+    async (collection: Collection) => {
+      await setting.saveCollection(collection);
+      setting.selectCollection(collection.id);
+    },
+    [setting]
+  );
+  const collections = useMemo(
+    () => savedCollections.filter(v => v.pinned),
+    [savedCollections]
+  );
   return (
     <div data-testid="collections" className={styles.wrapper}>
-      {savedCollections
-        .filter(v => v.pinned)
-        .map(view => {
+      {collections.length ? (
+        collections.map(view => {
           return (
             <CollectionRenderer
               getPageInfo={getPageInfo}
@@ -271,7 +285,26 @@ export const CollectionsList = ({ currentWorkspace }: CollectionsListProps) => {
               workspace={currentWorkspace}
             />
           );
-        })}
+        })
+      ) : (
+        <NewCollection
+          propertiesMeta={currentWorkspace.blockSuiteWorkspace.meta.properties}
+          getPageInfo={getPageInfo}
+          init={{
+            id: uuidv4(),
+            name: '',
+            filterList: [],
+            workspaceId: currentWorkspace.id,
+          }}
+          onConfirm={saveToCollection}
+        >
+          {showModal => (
+            <div onClick={showModal}>
+              {t['Create your first collections']()}
+            </div>
+          )}
+        </NewCollection>
+      )}
     </div>
   );
 };

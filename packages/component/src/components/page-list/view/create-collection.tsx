@@ -8,6 +8,7 @@ import {
   RemoveIcon,
   SaveIcon,
 } from '@blocksuite/icons';
+import type { ReactElement } from 'react';
 import { useCallback, useState } from 'react';
 
 import {
@@ -270,29 +271,43 @@ export const EditCollection = ({
     </div>
   );
 };
-export const SaveCollectionButton = ({
+export const SaveAsCollectionButton = (props: CreateCollectionProps) => {
+  const t = useAFFiNEI18N();
+  return (
+    <NewCollection {...props}>
+      {showModal => (
+        <Button
+          className={styles.saveButton}
+          onClick={showModal}
+          size="middle"
+          data-testid="save-as-collection"
+        >
+          <div className={styles.saveButtonContainer}>
+            <div className={styles.saveIcon}>
+              <SaveIcon />
+            </div>
+            <div className={styles.saveText}>{t['Save As Collection']()}</div>
+          </div>
+        </Button>
+      )}
+    </NewCollection>
+  );
+};
+
+export const NewCollection = ({
   init,
   onConfirm,
   getPageInfo,
   propertiesMeta,
-}: CreateCollectionProps) => {
+  children,
+}: CreateCollectionProps & {
+  children: (showModal: () => void) => ReactElement;
+}) => {
   const [show, changeShow] = useState(false);
   const t = useAFFiNEI18N();
   return (
     <>
-      <Button
-        className={styles.saveButton}
-        onClick={() => changeShow(true)}
-        size="middle"
-        data-testid="save-as-collection"
-      >
-        <div className={styles.saveButtonContainer}>
-          <div className={styles.saveIcon}>
-            <SaveIcon />
-          </div>
-          <div className={styles.saveText}>Save As Collection</div>
-        </div>
-      </Button>
+      {children(() => changeShow(true))}
       <EditCollectionModel
         title={t['Save As New Collection']()}
         propertiesMeta={propertiesMeta}
