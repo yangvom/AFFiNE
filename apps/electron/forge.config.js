@@ -89,6 +89,17 @@ const makers = [
     },
   },
   !process.env.SKIP_BUNDLE && {
+    name: '@electron-forge/maker-wix',
+    config: {
+      name: productName,
+      appIconPath: icoPath,
+      manufacturer: 'ToEverything Pte. Ltd.',
+      ui: {
+        chooseDirectory: true,
+      },
+    },
+  },
+  !process.env.SKIP_BUNDLE && {
     name: '@reforged/maker-appimage',
     config: {
       name: 'AFFiNE',
@@ -130,6 +141,7 @@ module.exports = {
       : undefined,
     // We need the following line for updater
     extraResource: ['./resources/app-update.yml'],
+    ignore: ['src', 'e2e', 'tests'],
   },
   makers,
   hooks: {
