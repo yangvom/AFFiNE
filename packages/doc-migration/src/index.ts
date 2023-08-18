@@ -90,21 +90,4 @@ for (const key of subDocs.keys()) {
 }
 
 saveYDocJSON(jsonOutputFile, migratedDoc);
-// const map: Record<string, string> = {};
-// migratedDoc.guid = 'rootDoc';
-// const docs: Doc[] = [migratedDoc];
-// while (docs.length > 0) {
-//     const doc = docs.shift();
-//     if (!doc) break;
-//     if (doc.subdocs) {
-//         for (const subdoc of doc.subdocs) {
-//             docs.push(subdoc);
-//         }
-//     }
-//     map[doc.guid] = Buffer.from(encodeStateAsUpdate(doc)).toString('base64');
-// }
-
-// const output = JSON.stringify(map);
-// const docPath = resolve(dirname(fileURLToPath(import.meta.url)), `${folder}/saved_doc.base64`);
-// fs.writeFileSync(docPath, output, 'utf-8');
 saveYDocBinary(migratedDoc, folder);
