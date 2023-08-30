@@ -172,7 +172,7 @@ export const NextAuthOptionsProvider: FactoryProvider<NextAuthOptions> = {
     if (config.auth.oauthProviders.google) {
       nextAuthOptions.providers.push(
         // @ts-expect-error esm interop issue
-        Google.default({
+        (Google.default as typeof Google)({
           clientId: config.auth.oauthProviders.google.clientId,
           clientSecret: config.auth.oauthProviders.google.clientSecret,
           checks: 'nonce',

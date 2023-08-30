@@ -8,10 +8,10 @@ import { registerEvents } from './events';
 import { registerHandlers } from './handlers';
 import { ensureHelperProcess } from './helper-process';
 import { logger } from './logger';
-import { restoreOrCreateWindow } from './main-window';
 import { registerPlugin } from './plugin';
 import { registerProtocol } from './protocol';
 import { registerUpdater } from './updater';
+import { restoreOrCreateWindow } from './window-manager';
 
 app.enableSandbox();
 

@@ -2,8 +2,8 @@ import { net, protocol, session } from 'electron';
 import { join } from 'path';
 
 import { CLOUD_BASE_URL } from './config';
-import { setCookie } from './main-window';
 import { simpleGet } from './utils';
+import { googleLoginWindow, setCookie } from './window-manager';
 
 const NETWORK_REQUESTS = ['/api', '/ws', '/socket.io', '/graphql'];
 const webStaticDir = join(__dirname, '../resources/web-static');
@@ -12,11 +12,14 @@ function isNetworkResource(pathname: string) {
   return NETWORK_REQUESTS.some(opt => pathname.startsWith(opt));
 }
 
+const googleOauthConsent = 'https://accounts.google.com/signin/oauth/consent';
+
 async function handleHttpRequest(request: Request) {
   const clonedRequest = Object.assign(request.clone(), {
     bypassCustomProtocolHandlers: true,
   });
   const { pathname, origin } = new URL(request.url);
+  const isGoogleConsentUrl = request.url.startsWith(googleOauthConsent);
   if (
     !origin.startsWith(CLOUD_BASE_URL) ||
     isNetworkResource(pathname) ||
@@ -34,6 +37,20 @@ async function handleHttpRequest(request: Request) {
       )) {
         await setCookie(origin, cookie);
       }
+      return new Response(originResponse.body, {
+        headers: originResponse.headers,
+        status: originResponse.statusCode,
+      });
+    } else if (isGoogleConsentUrl && googleLoginWindow) {
+      const cookies = await googleLoginWindow.webContents.session.cookies.get({
+        domain: '.google.com',
+      });
+      request.headers.append(
+        'Cookie',
+        cookies.map(p => `${p.name}=${p.value}`).join('; ')
+      );
+      // if we got here, we believe we
+      const originResponse = await simpleGet(request.url, request.headers);
       return new Response(originResponse.body, {
         headers: originResponse.headers,
         status: originResponse.statusCode,

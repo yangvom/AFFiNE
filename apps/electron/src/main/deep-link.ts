@@ -4,11 +4,11 @@ import type { App } from 'electron';
 
 import { buildType, isDev } from './config';
 import { logger } from './logger';
+import { uiSubjects } from './ui';
 import {
   handleOpenUrlInHiddenWindow,
   restoreOrCreateWindow,
-} from './main-window';
-import { uiSubjects } from './ui';
+} from './window-manager';
 
 let protocol = buildType === 'stable' ? 'affine' : `affine-${buildType}`;
 if (isDev) {

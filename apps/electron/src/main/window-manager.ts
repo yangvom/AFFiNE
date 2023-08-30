@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 
-import { BrowserWindow, nativeTheme } from 'electron';
+import { BrowserWindow, nativeTheme, shell } from 'electron';
 import electronWindowState from 'electron-window-state';
 import { join } from 'path';
 
@@ -16,7 +16,13 @@ const IS_DEV: boolean =
 
 const DEV_TOOL = process.env.DEV_TOOL === 'true';
 
-async function createWindow() {
+const googleOauthEndpoint = 'https://accounts.google.com/o/oauth2/v2/auth';
+
+// singleton
+let browserWindow: BrowserWindow | undefined;
+export let googleLoginWindow: BrowserWindow | undefined;
+
+async function createMainWindow() {
   logger.info('create window');
   const mainWindowState = electronWindowState({
     defaultWidth: 1000,
@@ -112,6 +118,48 @@ async function createWindow() {
     browserWindow.setSize(size[0], size[1]);
   });
 
+  // enhance webcontents security
+  // this handles location.href = xxx (not window.open)
+  browserWindow.webContents.on('will-navigate', (event, url) => {
+    // the following are allowed normally
+    if (
+      (process.env.DEV_SERVER_URL &&
+        url.startsWith(process.env.DEV_SERVER_URL)) ||
+      url.startsWith('affine://') ||
+      url.startsWith('file://.')
+    ) {
+      return;
+    }
+
+    // todo: have a better way to manage different type of windows
+    // for google login, we want to show popup window for login instead of opening in default browser
+    if (url.startsWith(googleOauthEndpoint)) {
+      googleLoginWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        alwaysOnTop: true,
+        webPreferences: {
+          nodeIntegration: false,
+          preload: join(__dirname, './preload.js'),
+          additionalArguments: [
+            `--main-exposed-meta=` + JSON.stringify(mainExposedMeta),
+            // popup window does not need helper process, right?
+          ],
+        },
+      });
+      googleLoginWindow.webContents.setUserAgent(
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:70.0) Gecko/20100101 Firefox/70.0'
+      );
+      googleLoginWindow.loadURL(url).catch(console.error);
+      event.preventDefault();
+      return;
+    }
+
+    // Prevent navigation
+    event.preventDefault();
+    shell.openExternal(url).catch(console.error);
+  });
+
   /**
    * URL for main window.
    */
@@ -126,15 +174,12 @@ async function createWindow() {
   return browserWindow;
 }
 
-// singleton
-let browserWindow: BrowserWindow | undefined;
-
 /**
  * Restore existing BrowserWindow or Create new BrowserWindow
  */
 export async function restoreOrCreateWindow() {
   if (!browserWindow || browserWindow.isDestroyed()) {
-    browserWindow = await createWindow();
+    browserWindow = await createMainWindow();
   }
 
   if (browserWindow.isMinimized()) {
