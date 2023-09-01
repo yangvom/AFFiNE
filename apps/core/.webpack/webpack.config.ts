@@ -27,10 +27,10 @@ export default async function (cli_env: any, _: any) {
         dependOn: ['polyfill/intl-segmenter', 'polyfill/ses'],
         import: resolve(rootPath, 'src/bootstrap/register-plugins.ts'),
       },
-      app: {
+      web: {
         chunkLoading: 'import',
         dependOn: ['polyfill/intl-segmenter', 'polyfill/ses', 'plugin'],
-        import: resolve(rootPath, 'src/index.tsx'),
+        import: resolve(rootPath, 'src/entry/web.tsx'),
       },
       '_plugin/index.test': {
         chunkLoading: 'import',
@@ -44,7 +44,7 @@ export default async function (cli_env: any, _: any) {
         inject: 'body',
         scriptLoading: 'module',
         minify: false,
-        chunks: ['app', 'plugin', 'polyfill/intl-segmenter', 'polyfill/ses'],
+        chunks: ['web', 'plugin', 'polyfill/intl-segmenter', 'polyfill/ses'],
         filename: 'index.html',
         templateParameters: {
           GIT_SHORT_SHA: gitShortHash(),
