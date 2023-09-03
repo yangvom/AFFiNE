@@ -34,6 +34,25 @@ env:
   NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
 jobs:
+  build-server:
+    name: Build Server
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.flavor }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+        with:
+          electron-install: false
+      - name: Build Server
+        run: yarn workspace @affine/server build
+      - name: Upload server dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: server-dist
+          path: ./apps/server/dist
+          if-no-files-found: error
+
   build-storage:
     name: Build Storage
     runs-on: ubuntu-latest
