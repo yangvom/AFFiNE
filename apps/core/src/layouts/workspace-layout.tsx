@@ -159,7 +159,11 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
     //    0.9.0-canary.0 ~ 0.9.0-canary.3
     const meta = currentWorkspace.blockSuiteWorkspace.doc.getMap('meta');
     const blockVersions = meta.get('blockVersions');
-    if (!(blockVersions instanceof YMap)) {
+    if (
+      !(blockVersions instanceof YMap) &&
+      typeof blockVersions === 'object' &&
+      blockVersions !== null
+    ) {
       console.log('fixing blockVersions');
       meta.set(
         'blockVersions',
