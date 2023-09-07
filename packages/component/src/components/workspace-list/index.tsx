@@ -34,6 +34,8 @@ interface SortableWorkspaceItemProps extends Omit<WorkspaceListProps, 'items'> {
   item: RootWorkspaceMetadata;
 }
 
+const modifiers = [restrictToParentElement, restrictToVerticalAxis];
+
 const SortableWorkspaceItem = (props: SortableWorkspaceItemProps) => {
   const { setNodeRef, attributes, listeners, transform } = useSortable({
     id: props.item.id,
@@ -66,8 +68,6 @@ const SortableWorkspaceItem = (props: SortableWorkspaceItemProps) => {
     </div>
   );
 };
-
-const modifiers = [restrictToParentElement, restrictToVerticalAxis];
 
 export const WorkspaceList = (props: WorkspaceListProps) => {
   const sensors = useSensors(
