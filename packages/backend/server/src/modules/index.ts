@@ -5,6 +5,7 @@ import { GqlModule } from '../graphql.module';
 import { AuthModule } from './auth';
 import { DocModule } from './doc';
 import { PaymentModule } from './payment';
+import { QuotaModule } from './quota';
 import { SyncModule } from './sync';
 import { UsersModule } from './users';
 import { WorkspaceModule } from './workspaces';
@@ -27,7 +28,8 @@ switch (SERVER_FLAVOR) {
       UsersModule,
       AuthModule,
       DocModule.forRoot(),
-      PaymentModule
+      PaymentModule,
+      QuotaModule
     );
     break;
   case 'allinone':
@@ -40,6 +42,7 @@ switch (SERVER_FLAVOR) {
       WorkspaceModule,
       UsersModule,
       AuthModule,
+      QuotaModule,
       SyncModule,
       DocModule.forRoot(),
       PaymentModule
