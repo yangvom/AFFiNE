@@ -167,9 +167,6 @@ type WorkspaceType {
   """Members of workspace"""
   members(skip: Int, take: Int): [InviteUserType!]!
 
-  """Blobs size of workspace"""
-  blobsSize: Int!
-
   """Permission of current signed in user in workspace"""
   permission: Permission!
 
@@ -184,6 +181,8 @@ type WorkspaceType {
 
   """Public pages of a workspace"""
   publicPages: [WorkspacePage!]!
+  """Blobs size of workspace"""
+  blobsSize: Int!
 }
 
 type InvitationWorkspaceType {
@@ -287,7 +286,8 @@ type Mutation {
   """Remove user avatar"""
   removeAvatar: RemoveAvatar!
   deleteAccount: DeleteAccount!
-  addToNewFeaturesWaitingList(type: NewFeaturesKind!, email: String!): AddToNewFeaturesWaitingList!
+  addToEarlyAccess(email: String!): Int!
+  removeEarlyAccess(email: String!): Int!
 
   """Create a subscription checkout link of stripe"""
   checkout(recurring: SubscriptionRecurring!, idempotencyKey: String!): String!
