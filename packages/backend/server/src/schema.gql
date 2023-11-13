@@ -176,13 +176,14 @@ type WorkspaceType {
   """Owner of workspace"""
   owner: UserType!
 
+  """Blobs size of workspace"""
+  blobsSize: Int!
+
   """Shared pages of workspace"""
   sharedPages: [String!]! @deprecated(reason: "use WorkspaceType.publicPages")
 
   """Public pages of a workspace"""
   publicPages: [WorkspacePage!]!
-  """Blobs size of workspace"""
-  blobsSize: Int!
 }
 
 type InvitationWorkspaceType {
@@ -249,8 +250,8 @@ type Query {
 
   """Get user by email"""
   user(email: String!): UserType
-  prices: [SubscriptionPrice!]!
   listEarlyAccess: [UserType!]!
+  prices: [SubscriptionPrice!]!
 }
 
 type Mutation {
@@ -297,8 +298,6 @@ type Mutation {
   cancelSubscription(idempotencyKey: String!): UserSubscription!
   resumeSubscription(idempotencyKey: String!): UserSubscription!
   updateSubscriptionRecurring(recurring: SubscriptionRecurring!, idempotencyKey: String!): UserSubscription!
-  addToEarlyAccess(email: String!): Int!
-  removeEarlyAccess(email: String!): Int!
 }
 
 """The `Upload` scalar type represents a file upload."""

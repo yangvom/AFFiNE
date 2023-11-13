@@ -27,9 +27,9 @@ switch (SERVER_FLAVOR) {
       WorkspaceModule,
       UsersModule,
       AuthModule,
+      QuotaModule,
       DocModule.forRoot(),
-      PaymentModule,
-      QuotaModule
+      PaymentModule
     );
     break;
   case 'allinone':
