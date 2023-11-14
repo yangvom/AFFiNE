@@ -30,6 +30,7 @@ import { Metrics } from './metrics/metrics';
           context: ({ req, res }: { req: Request; res: Response }) => ({
             req,
             res,
+            isAdminQuery: false,
           }),
           plugins: [new GQLLoggerPlugin(metrics)],
         };
