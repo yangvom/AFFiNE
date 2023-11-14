@@ -77,6 +77,36 @@ const useBlockElementById = (
   return blockElement;
 };
 
+function useLoadPage(page: Page) {
+  let isReady = page.loaded; // page.loaded means blocks have been loaded from space doc
+  let isRootAdded = !!page.root; // page.root means can render to dom
+  if (isReady && isRootAdded) {
+    return;
+  }
+
+  use(
+    new Promise<Page>((resolve, reject) => {
+      function tryToResolve() {
+        if (isReady && isRootAdded) {
+          resolve(page);
+        }
+      }
+
+      page.slots.ready.once(() => {
+        isReady = true;
+        tryToResolve();
+      });
+      page.slots.rootAdded.once(() => {
+        isRootAdded = true;
+        tryToResolve();
+      });
+
+      // trigger subdocs events to load resource
+      page.waitForLoaded().catch(reject);
+    })
+  );
+}
+
 const BlockSuiteEditorImpl = ({
   mode,
   page,
@@ -86,9 +116,7 @@ const BlockSuiteEditorImpl = ({
   onModeChange,
   style,
 }: EditorProps): ReactElement => {
-  if (!page.loaded) {
-    use(page.waitForLoaded());
-  }
+  useLoadPage(page);
   assertExists(page, 'page should not be null');
   const editorRef = useRef<EditorContainer | null>(null);
   if (editorRef.current === null) {
