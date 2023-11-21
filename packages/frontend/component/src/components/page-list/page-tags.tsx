@@ -1,9 +1,9 @@
 import type { Tag } from '@affine/env/filter';
 import { MoreHorizontalIcon } from '@blocksuite/icons';
-import { Menu } from '@toeverything/components/menu';
 import clsx from 'clsx';
 import { useEffect, useMemo, useRef } from 'react';
 
+import { Menu } from '../../ui/menu';
 import * as styles from './page-tags.css';
 import { stopPropagation } from './utils';
 
