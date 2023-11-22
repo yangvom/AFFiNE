@@ -1,0 +1,8 @@
+query listHistory($workspaceId: String!, $pageDocId: String!) {
+  workspace(id: $workspaceId) {
+    histories(guid: $pageDocId) {
+      id
+      timestamp
+    }
+  }
+}
